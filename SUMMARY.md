@@ -1,0 +1,22 @@
+# Table of contents
+
+* [第一章 围棋：黑白的世界](README.md)
+* [前言](qian-yan.md)
+* [第二章 实现一个围棋软件](untitled-1.md)
+* [第三章 传统的棋类智能](untitled.md)
+* [第四章 机器学习入门](fu-lu-1-ji-qi-xue-xi-ru-men.md)
+* [附录2：Keras入门指南](fu-lu-2keras-ru-men-zhi-nan.md)
+* [附录3：Numpy和其它工具的快速入门指南](fu-lu-3numpy-he-qi-ta-gong-ju-de-kuai-su-ru-men-zhi-nan.md)
+* [temp](temp.md)
+* [通用化我们的围棋AI程序](tong-yong-hua-wo-men-de-wei-qi-ai-cheng-xu.md)
+* [Windows安装TensorFlow和TensorFlow-GPU](untitled-2.md)
+* [附录4：厉害的象棋游戏AI](fu-lu-4-na-xie-li-hai-de-xiang-qi-you-xi-ai.md)
+* [附录5：不同地区的围棋规则](fu-lu-5-bu-tong-de-wei-qi-gui-ze.md)
+* [HDF5文件结构](hdf5-wen-jian-jie-gou.md)
+* [机器学习应用在围棋上](ji-qi-xue-xi-ying-yong-zai-wei-qi-shang.md)
+* [围棋棋谱](wei-qi-qi-pu.md)
+* [关于合并hdf5文件](guan-yu-he-bing-hdf5-wen-jian.md)
+* [策略梯度](ce-lve-ti-du.md)
+* [DQN](dqn.md)
+* [AC](ac.md)
+
