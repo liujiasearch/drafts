@@ -70,7 +70,7 @@ TensorFlow从1.15版本开始不再区分CPU版和GPU版，如果要安装Tensor
 
 ```text
 import tensorflow as tf;
-print(tf.__version__)    #Python 2 执行 print tf.__version__ 
+print(tf.__version__)    #Python 2 执行 print tf.__version__
 ```
 
 如果打印出了版本号则代表安装成功。但是正如前文提到的，老架构的CPU不支持AVX指令集，Windows 7 会抛出`ImportError: DLL load failed with error code -1073741795`的错，而Windows 10 会抛出`ImportError: DLL load failed: A dynamic link library (DLL) initialization routine failed`。Linux下，使用这类CPU的主机会直接报`Illegal instruction (core dump)`。
@@ -87,7 +87,7 @@ Github的贡献者并没有提供X86的版本，建议使用32位老架构CPU的
 
 根据贡献者列出的表格，可以得知，第一行的TensorFlow版本只专门针对CPU编译，不包含GPU支持,同时该版本指令集使用的是sse2，并且需要Python 3.7版本才能正常使用。第三行的TensorFlow增加了GPU支持，因此需要额外安装NVIDIA的CUDA10.1 和cuDNN7.6 版本。并且正如之前提到的原因，必须使用CUDA 10.1.168\_425.25 和cuDNN 7.6.0.64 。根据表格中的备注显示，硬件上还需要[GPU的计算力](https://developer.nvidia.com/cuda-gpus)（GPU Compute Capability）等于3.0。这相当于GTX650的水平。在实际使用中，高于这个水平的GPU芯片也能够被很好地支持。
 
-| Path  | Compiler | CUDA/cuDNN | SIMD | Notes |
+| Path | Compiler | CUDA/cuDNN | SIMD | Notes |
 | :---: | :---: | :---: | :---: | :---: |
 | 1.14.0\py37\CPU\sse2 | VS2019 16.1 | No | x86\_64 | Python 3.7 |
 | 1.14.0\py37\CPU\avx2 | VS2019 16.1 | No | AVX2 | Python 3.7 |
@@ -179,8 +179,7 @@ Linux 推荐采用 Ubuntu 16.04.6LTS ，这是一个相当成熟并被广泛验�
 
 编译支持GPU的TensorFlow时，请一定注意在`./configure`里指明自己使用的CUDA和cuDNN的版本。 对于编译优化标记，默认值 \(`-march=native`\) 会优化针对计算机的 CPU类型生成的代码。如果只是本机使用，可以尝试不修改此参数，但是建议显式地指出自己CPU支持的指令集，特别是使用那些不支持AVX指令集CPU的用户。
 
-显式地指出CPU支持的指令集：  
-
+显式地指出CPU支持的指令集：
 
 ```text
 -march=native -mmmx -m3dnow -msse2  -msse3 -msse4a    #AMD X2 550 CPU支持的指令集

@@ -21,12 +21,12 @@ description: >-
 {% code title="myGO\\tic-tac-toe\\agent.py" %}
 ```python
 def findWinMove(game_state,player):
-	possible_moves = []		
-	for candidate_move in game_state.legal_moves(player):			#1
-		next_game_state = game_state.apply_move(candidate_move)		#2
-		if next_game_state.is_over() and next_game_state.winner == player:
-			possible_moves.append(candidate_move)					#3
-	return possible_moves											#4
+    possible_moves = []        
+    for candidate_move in game_state.legal_moves(player):            #1
+        next_game_state = game_state.apply_move(candidate_move)        #2
+        if next_game_state.is_over() and next_game_state.winner == player:
+            possible_moves.append(candidate_move)                    #3
+    return possible_moves                                            #4
 ```
 {% endcode %}
 
@@ -44,14 +44,14 @@ def findWinMove(game_state,player):
 {% code title="myGO\\tic-tac-toe\\agent.py" %}
 ```python
 def findMinLoseMoves(game_state,player):
-	opponent = player.other()										#1
-	possible_moves = []
-	for candidate_move in game_state.legal_moves(player):			#2 
-		next_state = game_state.apply_move(candidate_move)			#3
-		opponent_winning_move = findWinMove(next_state, opponent)	#4
-		if opponent_winning_move is None:
-			possible_moves.append(candidate_move)					#5
-	return possible_moves
+    opponent = player.other()                                        #1
+    possible_moves = []
+    for candidate_move in game_state.legal_moves(player):            #2 
+        next_state = game_state.apply_move(candidate_move)            #3
+        opponent_winning_move = findWinMove(next_state, opponent)    #4
+        if opponent_winning_move is None:
+            possible_moves.append(candidate_move)                    #5
+    return possible_moves
 ```
 {% endcode %}
 
@@ -70,13 +70,13 @@ def findMinLoseMoves(game_state,player):
 {% code title="myGO\\tic-tac-toe\\agent.py" %}
 ```python
 def findNextWinMove(game_state, player):
-	opponent = player.other()
-	for candidate_move in game_state.legal_moves(player): 
-		next_state = game_state.apply_move(candidate_move) 
-		good_responses = findMinLoseMoves(next_state, opponent)		#1
-		if not good_responses:
-			return candidate_move
-	return None
+    opponent = player.other()
+    for candidate_move in game_state.legal_moves(player): 
+        next_state = game_state.apply_move(candidate_move) 
+        good_responses = findMinLoseMoves(next_state, opponent)        #1
+        if not good_responses:
+            return candidate_move
+    return None
 ```
 {% endcode %}
 
@@ -91,12 +91,16 @@ def findNextWinMove(game_state, player):
 * 能不能找到自己在下一步中立即胜利，如果能就执行，否则进入下一步；
 * 查看对方是不是在下一步存在必胜的下法，如果不能就认输，否则继续进入下一步；
 
-              。。。。。。
+  ```text
+          。。。。。。
+  ```
 
 * 能不能找到自己在下一步中必胜的下法，如果能就执行，否则进入n；
 * 查看对方是不是在下一步存在必胜的下法，并且能否阻止，否则继续进入下一步；
 
-             。。。。。。
+  ```text
+         。。。。。。
+  ```
 
 从上述的算法我们可以看出，整个算法即简单又粗暴，计算过程试图穷尽所有可能的选择，如果己方下一步不能胜利，就尝试阻止对方在下一步胜利，之后再考虑己方在下下一步能否胜利，如果不能则尝试阻止对方在下下一步的胜利，以这种逻辑不断地模拟行棋的过程，只要己方在落子时不能胜利，就将子落在能阻止对方胜利的位置，直到达到棋局终止的条件。即便是像井字棋这种非常简单，仅有9个落子位的棋类游戏，第一步行棋要搜索的空间也达到94981步，虽然对现代计算机而言这算不上是很深的深度，但如果是象棋，数字就会变得非常可怕，以现代计算机的处理能力，这种贪婪算法所耗费的时间是不可接受的（计算一步棋大概要算上好几年）。假使换做是围棋，这个算法就会更加耗时冗长，几乎是会永无止境的运算下去。
 
@@ -112,7 +116,7 @@ class GameState(enum.Enum):     #2
     waiting=0
     running=1
     over=2
-    
+
 player_x=1                      #3
 player_o=-1
 ```
@@ -166,17 +170,16 @@ class Game:
         self.bot2=None
 
     def getResult(self):                                        #3                   
-        
+
     def run(self,mode='hvh',bot1_mode='r',bot2_mode='r'):       #4
-        
+
     def applyMove(self,move):                                   #5
-        
+
     def simuApplyMove(self,move):                               #6
-        
+
     def isLegalMove(self,move):                                 #7
-        
+
     def getLegalMoves(self):                                    #8
-        
 ```
 {% endcode %}
 
@@ -204,7 +207,7 @@ class Agent:
         if self.mode=='r':                       
             moves=self.game.getLegalMoves()
             return random.choice(moves)            
-        if self.mode=='ai':                      
+        if self.mode=='ai':
 ```
 {% endcode %}
 
@@ -215,15 +218,9 @@ class Agent:
 
 随机方法的棋力非常弱，它从所有合法的选项中随机挑选出一个选择，专门实现随机方法这件事的目的是为了给后面的极小化极大算法提供一个参考对手，我们后面会看到贪婪算法与随机算法在棋力方面的差距。
 
-
-
-
-
 ## 3.2 Alpha-beta剪枝算法
 
 Alpha-beta剪枝是一种搜索算法，其出现的目的是为了减少极小化极大算法（Minimax算法）搜索树的节点数。1997年5月11日，击败加里·卡斯帕罗夫的IBM”深蓝“就采用了这种算法。
-
-
 
 ## 3.3 蒙特卡洛方法
 
@@ -271,10 +268,10 @@ class area_machine:
         dots_in_cycle=self.isInsideCycle(dots) #查找在圆内的点
         dots_in_cycle_n=np.sum(dots_in_cycle)
         return (dots_in_cycle_n/self.times)*square_area #返回圆的面积
-        
+
 times=[100,1000,10000,100000,1000000,10000000] #请尝试修改这里的数字
 np.random.seed(2020)
-print([area_machine(i,r).run() for i in times])          
+print([area_machine(i,r).run() for i in times])
 ```
 {% endcode %}
 
@@ -307,42 +304,41 @@ print([area_machine(i,r).run() for i in times])
 {% code title="myGO\\tic-tac-toe\\ttt.py" %}
 ```python
 class Agent:
-    
+
     ...
-        
+
     def chooseMove(self): 
-        
+
         ...
 
         if self.mode=='mt': 
-        		try_times=1000 #1        		
-        		if self.game.last_move is not None:	#2	
-        				node_tmp=self.tree.findNextNodeByMove(self.tree.tree_root, \
+                try_times=1000 #1                
+                if self.game.last_move is not None:    #2    
+                        node_tmp=self.tree.findNextNodeByMove(self.tree.tree_root, \
                     self.game.last_move) #3
-        				if node_tmp==None: #4
-        						self.tree.node_name+=1
-        						self.tree.tree_root=Node(str(self.tree.node_name), \
+                        if node_tmp==None: #4
+                                self.tree.node_name+=1
+                                self.tree.tree_root=Node(str(self.tree.node_name), \
                         parent=self.tree.tree_root,move=self.game.last_move, \
                         loss=0,win=0,draw=0,player=-1*self.player)
-        				else:
-        						self.tree.tree_root=node_tmp
-        		node_point=self.tree.tree_root #5
-        		for i in range(try_times): #6
-        				board_=copy.copy(self.game.board.board)	
-        				node_start=node_point
-        				move_records,game_result=easySimuGame(board_,self.player)
-        				for move in move_records:
-        						node_start=self.tree.updateLeaf(node_start, \
+                        else:
+                                self.tree.tree_root=node_tmp
+                node_point=self.tree.tree_root #5
+                for i in range(try_times): #6
+                        board_=copy.copy(self.game.board.board)    
+                        node_start=node_point
+                        move_records,game_result=easySimuGame(board_,self.player)
+                        for move in move_records:
+                                node_start=self.tree.updateLeaf(node_start, \
                         move,game_result) #7
-        		all_next_leaves=self.tree.getNodeLeaves(node_point)
-        		all_rates=[(node.loss/(node.loss+node.win+node.draw)) \
+                all_next_leaves=self.tree.getNodeLeaves(node_point)
+                all_rates=[(node.loss/(node.loss+node.win+node.draw)) \
                 for node in all_next_leaves]
-        		all_rates=np.array(all_rates)
-        		pick_move_index=int(random.choice(np.argwhere( \
+                all_rates=np.array(all_rates)
+                pick_move_index=int(random.choice(np.argwhere( \
                 all_rates==min(all_rates)))) #8
-        		self.tree.tree_root=all_next_leaves[pick_move_index] #8
-        		return all_next_leaves[pick_move_index].move
-  
+                self.tree.tree_root=all_next_leaves[pick_move_index] #8
+                return all_next_leaves[pick_move_index].move
 ```
 {% endcode %}
 
@@ -422,7 +418,7 @@ $$
 
 根据上图的计算，在使用新的价值函数后，原本被忽略的节点反而被重点考量。超参c应该如何选择才能达到好的效果可能仁者见仁智者见智。需要注意，由于算法调整了原始的评估价值，对应的仿真次数也应重新分配。在总仿真次数固定的情况下，根据评分归一化后均匀分配仿真次数是可行的方案之一。如果计算资源充裕，采用动态分配也是理想的方法。
 
-蒙特卡洛算法默认采用随机采样作为缺省的仿真策略。随机策略保证了采样的均匀性，但是在实际应用中，仿真有时间限制，采用随机策略的围棋AI往往棋力不高，为了进一步提高仿真的有效性，可以考虑使用更复杂的仿真策略，比如策略中可以考虑气 、形 、定式 、攻击模式  、防守模式等一些重要的围棋基本概念。比如在搜索策略中考虑引入常见棋形的固定下法，人类选手在评估棋力的时候，能记住多少围棋定式也是衡量标准之一。
+蒙特卡洛算法默认采用随机采样作为缺省的仿真策略。随机策略保证了采样的均匀性，但是在实际应用中，仿真有时间限制，采用随机策略的围棋AI往往棋力不高，为了进一步提高仿真的有效性，可以考虑使用更复杂的仿真策略，比如策略中可以考虑气 、形 、定式 、攻击模式 、防守模式等一些重要的围棋基本概念。比如在搜索策略中考虑引入常见棋形的固定下法，人类选手在评估棋力的时候，能记住多少围棋定式也是衡量标准之一。
 
 ![&#x9ED1;&#x68CB;&#x6253;&#x5403;&#xFF0C;&#x767D;&#x68CB;&#x957F;&#x7684;&#x56FA;&#x5B9A;&#x4E0B;&#x6CD5;](.gitbook/assets/wei-ming-ming-hui-tu-15.svg)
 
@@ -476,24 +472,4 @@ for link in soup.find_all('a'):
 归根结底，传统算法的目的就是尽可能正确的”打分“和尽可能多的”穷举“。无论是国际象棋、中国象棋、围棋、或者其他如西洋跳棋、黑白棋，所有棋类程序在Alpha-Go出现以前，都围绕着这两点来进行基本框架的搭建。它们之间的区别仅在于使用的具体策略不同，以及针对不同的策略采用不同的优化手段。传统的方法在搜索复杂度不是特别高的情况下可以工作的很好。比如中国象棋和国际象棋的AI程序早在十几年前就已经赶超了人类最顶尖的选手。不知道为什么，同样的策略作用在围棋软件上效果却泛善可陈。也许是围棋规则太过简单，又或者是在下围棋的时候并不是时时刻刻都要秉承着其最终胜利的原则。 汉代扬雄在其《法言·君子》中提到：“昔乎颜渊以退为进，天下鲜俪焉”，意思是：以谦让取得德行的进步，以退让的姿态作为进取的手段。传统方法时时刻刻都在基于“胜”的定义进行思考，也许可能太过激进。
 
 Alpha-Go背后的强化学习策略一改传统的设计思路。 它不是一开始就奔着设计出一个强大的AI程序为目的，强化学习只教给AI程序基本的游戏规则，然后让程序自己在游戏中学习， 这种方法目前看起来更贴近人类的学习的路径，效果也更好。
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

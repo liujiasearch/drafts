@@ -84,7 +84,7 @@ if __name__ == "__main__":
     bot1=TrainRobot(rand=bot1_isrand)    #2
     bot2=TrainRobot(rand=bot2_isrand)    #2
     bot1.dp_compile()    #3
-    
+
 class PD_Object():
     def make_samples(self,rounds,bot1,bot2):
         bot1_win=0
@@ -350,6 +350,4 @@ class DenseModel():
 2. 由于我们有足够多的样本可以用来学习，而且我们对单个样本是否真的有效并不报太大希望，所以所有的样本我们只学习一次。经验上看，对于围棋的强化学习，每一轮训练1000个左右的样本能够得到理想的结果。
 
 我们开源的代码里用梯度下降法训练了9路围棋的智能程序，在训练一千轮后，我们的智能体就能够主动发起叫吃并在对手不应后吃掉对方的子。9路围棋因为棋盘不大，吃掉对方的子将会带来巨大地优势，所以神经网络会发现这个下法并不令人吃惊。
-
-
 

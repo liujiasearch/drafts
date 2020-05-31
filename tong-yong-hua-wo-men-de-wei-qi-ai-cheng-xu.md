@@ -14,21 +14,21 @@
 
 {% code title="myGO\\webserver\\server.py" %}
 ```python
-from board_fast import Robot,Point	#1
+from board_fast import Robot,Point    #1
 @route('/genmove')
 def genmove():
-	color = request.query.color
-	board = request.query.board
-	board_array=board.split('_', -1 )	#2
-	board_array=[-1 if i =='O' else i for i in board_array]	#3
-	npboard=np.array(board_array)	#3
-	npboard[npboard=='.'] = 0	#3
-	npboard[npboard=='X'] = 1	#3
-	npboard=npboard.astype(int)	#3
-	npboard=np.flip(npboard.reshape(int(np.sqrt(len(npboard))),\
-	int(np.sqrt(len(npboard)))).T,axis=1)	#4
-	point=Robot.quickChooseMove(npboard,color=color)	#5
-	return {'x':str(point.row),'y':str(point.col)}
+    color = request.query.color
+    board = request.query.board
+    board_array=board.split('_', -1 )    #2
+    board_array=[-1 if i =='O' else i for i in board_array]    #3
+    npboard=np.array(board_array)    #3
+    npboard[npboard=='.'] = 0    #3
+    npboard[npboard=='X'] = 1    #3
+    npboard=npboard.astype(int)    #3
+    npboard=np.flip(npboard.reshape(int(np.sqrt(len(npboard))),\
+    int(np.sqrt(len(npboard)))).T,axis=1)    #4
+    point=Robot.quickChooseMove(npboard,color=color)    #5
+    return {'x':str(point.row),'y':str(point.col)}
 ```
 {% endcode %}
 
@@ -161,7 +161,6 @@ sys.stdout.flush()
 
 {% code title="myGO\\gtp\\play\_locally.py" %}
 ```python
-
 class Play_Gtp:
     def __init__(self, bot=None, handicap=0,\
         opponent=["gnugo","--mode", "gtp"],output_sgf=None,our_color='b'):    #1
@@ -252,18 +251,18 @@ class Play_Gtp:
 {% code title="myGO\\gtp\\go\_engine\_program.py" %}
 ```python
 class gtp_client:
-	def __init__(self):
-		self.commands_mini={
-			"protocol_version":self.foo_protocol_version,
-			"name":self.foo_name,
-			"version":self.foo_version,
-			"list_commands":self.foo_list_commands,
-			"boardsize":self.foo_boardsize,
-			"clear_board":self.foo_clear_board,
-			"komi":self.foo_komi,
-			"play":self.foo_play,
-			"genmove":self.foo_genmove,
-		}
+    def __init__(self):
+        self.commands_mini={
+            "protocol_version":self.foo_protocol_version,
+            "name":self.foo_name,
+            "version":self.foo_version,
+            "list_commands":self.foo_list_commands,
+            "boardsize":self.foo_boardsize,
+            "clear_board":self.foo_clear_board,
+            "komi":self.foo_komi,
+            "play":self.foo_play,
+            "genmove":self.foo_genmove,
+        }
 ```
 {% endcode %}
 
@@ -271,21 +270,21 @@ class gtp_client:
 
 {% code title="myGO\\gtp\\go\_engine\_program.py" %}
 ```python
-	def foo_protocol_version(self,args): 		#1
-		return '2'
-	def foo_name(self,args):			#2
-		return 'MyGO'
-	def foo_version(self,args):			#3
-		return '1.0'
-	def foo_list_commands(self,args):			#4
-		return 'protocol_version\nname\nversion\nlist_commands\n' + \
-			'boardsize\nclear_board\nkomi\nplay\ngenmove'
-	def foo_boardsize(self,args):			#5
-		return '' if args[0] else 'board size outside engine\'s limits'
-	def foo_clear_board(self,args):			#6
-		return ''
-	def foo_komi(self,args):			#7
-		return ''
+    def foo_protocol_version(self,args):         #1
+        return '2'
+    def foo_name(self,args):            #2
+        return 'MyGO'
+    def foo_version(self,args):            #3
+        return '1.0'
+    def foo_list_commands(self,args):            #4
+        return 'protocol_version\nname\nversion\nlist_commands\n' + \
+            'boardsize\nclear_board\nkomi\nplay\ngenmove'
+    def foo_boardsize(self,args):            #5
+        return '' if args[0] else 'board size outside engine\'s limits'
+    def foo_clear_board(self,args):            #6
+        return ''
+    def foo_komi(self,args):            #7
+        return ''
 ```
 {% endcode %}
 
@@ -302,38 +301,38 @@ class gtp_client:
 {% code title="myGO\\gtp\\go\_engine\_program.py" %}
 ```python
 class gtp_client:
-	def __init__(self):			#1
-		self.agentB=GoAgent(Player.black)
-		self.agentW=GoAgent(Player.white)
-		self.board=GoBoard()	
-	def foo_play(self,args):		
-		if len(args)!=2:
-			return 'Unknown command.'
-		if args[0].lower()!='b' and args[0].lower()!='black' \
-			and args[0].lower()!='w' and args[0].lower()!='white':
-			return 'Unknown command.'
-		if args[0].lower()=='b' or args[0].lower()=='black':
-			whosTurn=Player.black
-		else:
-			whosTurn=Player.white
-		move=self.gtp_position_to_coords(args[1])			#2
-		self.board.envUpdate(whosTurn,move)			#3
-		return ''
-	def foo_genmove(self,args):
-		if len(args)!=1:
-			return 'Unknown command.'
-		if args[0].lower()=='b' or args[0].lower()=='black':
-			whosTurn=Player.black
-		elif args[0].lower()=='w' or args[0].lower()=='white':
-			whosTurn=Player.white			
-		else:
-			return 'Unknown command.'
-		if whosTurn==Player.black:
-			move=self.agentB.chooseMove('R',self.board)			#4
-		else:
-			move=self.agentW.chooseMove('R',self.board)
-		self.board.envUpdate(whosTurn,move)
-		return self.coords_to_gtp_position(move)
+    def __init__(self):            #1
+        self.agentB=GoAgent(Player.black)
+        self.agentW=GoAgent(Player.white)
+        self.board=GoBoard()    
+    def foo_play(self,args):        
+        if len(args)!=2:
+            return 'Unknown command.'
+        if args[0].lower()!='b' and args[0].lower()!='black' \
+            and args[0].lower()!='w' and args[0].lower()!='white':
+            return 'Unknown command.'
+        if args[0].lower()=='b' or args[0].lower()=='black':
+            whosTurn=Player.black
+        else:
+            whosTurn=Player.white
+        move=self.gtp_position_to_coords(args[1])            #2
+        self.board.envUpdate(whosTurn,move)            #3
+        return ''
+    def foo_genmove(self,args):
+        if len(args)!=1:
+            return 'Unknown command.'
+        if args[0].lower()=='b' or args[0].lower()=='black':
+            whosTurn=Player.black
+        elif args[0].lower()=='w' or args[0].lower()=='white':
+            whosTurn=Player.white            
+        else:
+            return 'Unknown command.'
+        if whosTurn==Player.black:
+            move=self.agentB.chooseMove('R',self.board)            #4
+        else:
+            move=self.agentW.chooseMove('R',self.board)
+        self.board.envUpdate(whosTurn,move)
+        return self.coords_to_gtp_position(move)
 ```
 {% endcode %}
 

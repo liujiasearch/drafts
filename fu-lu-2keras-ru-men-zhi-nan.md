@@ -9,17 +9,17 @@ Keras严格来说不算机器学习软件，也不是机器学习框架，因为
 
 对大多数人而言，需要解决的问题只是使用神经网络来自学习某个具体问题模型的函数，至于其中到底要使用哪种优化算法来使得学习效率更高更快他们并不关心。而往往大部分问题并不是太复杂，已知的一些简单算法就足以应付。在这种情况下，直接去使用机器学习库，把简单问题当复杂问题一样来编程操作就显得多余。而且现在常见的机器学习库不下十余种，虽然它们解决的问题相类似，但是每个软件都有自己的使用规范，如果让用户逐个都学习一遍，那就太不人道了。Keras就是为了解决这个问题而诞生的，它提供了更高层面的API，将机器学习库TensorFlow, CNTK, 和Theano作为后端。用户只要调用统一的Keras接口，就可以随意操作TensorFlow, CNTK, 或者Theano来进行机器学习。这些库之间规范上的差异由Keras来统一解决，这大大方面了普通用户。用户获得的一个最大好处就是可以把自己的想法（idea）迅速转换为应用模型，用最短的时间来验证自己的想法。
 
-### 安装
+## 安装
 
 首先要安装Keras的后端学习库，Keras本身只是这些机器学习库的顶层API。推荐使用TensorFlow，当然使用其它的库并不会给机器学习的结果带来影响。使用[pip](https://pip.pypa.io/en/stable/)工具来安装Python是非常方便的，为了使得安装更稳定，这里额外使用Python的镜像源来安装TensorFlow。国内能稳定访问的镜像源如下（只列出支持https协议的镜像源）：
 
-> 清华大学：[https://pypi.tuna.tsinghua.edu.cn/simple](https://pypi.tuna.tsinghua.edu.cn/simple) 
+> 清华大学：[https://pypi.tuna.tsinghua.edu.cn/simple](https://pypi.tuna.tsinghua.edu.cn/simple)
 >
 > 阿里云：[https://mirrors.aliyun.com/pypi/simple/](https://mirrors.aliyun.com/pypi/simple/)
 >
-> 加利福尼亚大学：[https://www.lfd.uci.edu/~gohlke/pythonlibs/](https://www.lfd.uci.edu/~gohlke/pythonlibs/) 
+> 加利福尼亚大学：[https://www.lfd.uci.edu/~gohlke/pythonlibs/](https://www.lfd.uci.edu/~gohlke/pythonlibs/)
 >
-> 中国科技大学 [https://pypi.mirrors.ustc.edu.cn/simple/](https://pypi.mirrors.ustc.edu.cn/simple/) 
+> 中国科技大学 [https://pypi.mirrors.ustc.edu.cn/simple/](https://pypi.mirrors.ustc.edu.cn/simple/)
 >
 > 豆瓣：[https://pypi.douban.com/simple/](https://pypi.douban.com/simple/)
 
@@ -37,7 +37,7 @@ pip install -i https://pypi.tuna.tsinghua.edu.cn/simple tensorflow
 pip install -i https://pypi.tuna.tsinghua.edu.cn/simple keras
 ```
 
-### 验证
+## 验证
 
 打开python环境，输入：
 
@@ -47,15 +47,11 @@ import keras
 
 显示`Using TensorFlow backend.`表示安装成功。
 
+## 基本操作：
 
+_**案例1**_ **\*\*\_**使用前馈网络实现线性回归（函数拟合）\*\*\_
 
-### 基本操作：
-
-_**案例1**_ ****_**使用前馈网络实现线性回归（函数拟合）**_
-
-_**案例2**_ ****_**使用前馈网络实现数据分类**_
+_**案例2**_ **\*\*\_**使用前馈网络实现数据分类\*\*\_
 
 _**案例3 使用卷积网络实现图像分类**_
-
-
 

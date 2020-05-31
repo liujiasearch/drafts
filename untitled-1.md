@@ -85,7 +85,7 @@ class GoJudge():            #1
         ...
     @classmethod
     def getGameResult(cls,board):        
-        ...    
+        ...
 ```
 {% endcode %}
 
@@ -194,7 +194,7 @@ class GoAgent:
     ...
     def chooseMove(self,how,board):            #1
         ...
-        
+
     def isPolicyLegal(self,move,board):            #3
         ...
 ```
@@ -221,7 +221,7 @@ class GoAgent:
                 and self.isPolicyLegal((row,col),board):            #4
                     return (row,col) #stone
             return (-5,-5)            #5
-    ...            
+    ...
 ```
 {% endcode %}
 
@@ -374,7 +374,6 @@ class GoBoard:
                 line.append(STONE_TO_CHAR.get(player))
             print('%s%d %s' % (bump, self.height-1-row, ''.join(line)))
         print('    ' + '  '.join(COLS[:self.width]))
-
 ```
 {% endcode %}
 
@@ -510,7 +509,7 @@ def main():
             if not GoJudge.isLegalMove(board,move,whosTurn):            #7
                 continue
             '''
-            
+
         else:
             move=agent_w.chooseMove('RM',board)        
         [game_state,player_next]=GoJudge.NextState(whosTurn,move,board)

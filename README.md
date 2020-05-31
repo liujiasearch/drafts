@@ -17,7 +17,7 @@ description: >-
 
 ![&#x56FE; 1 - 2 &#x7535;&#x5B50;&#x68CB;&#x949F;](.gitbook/assets/image%20%2832%29.png)
 
-随着互联网的普及，很多人更乐于在网络上与别人下棋。在中国，“[弈城围棋网](www.eweiqi.com)”是一个比较著名的围棋对弈网站。在国际上[KGS](http://www.gokgs.com/)是非常热门的围棋对弈站点，它是完全免费的，来自世界各地的人们在上面切磋技艺。网络上一套标准的棋盘如图1-3。大部分的网上对弈棋盘都以两维的形式展现，双方的棋子用白色和黑色的原点表示。除了通过互联网站下棋，一些围棋软件在棋友中使用也十分广泛，这些软件可以为围棋学习提供便利，也可以在亲朋好友间进行对弈。常见的围棋软件有[Gnu-Go](www.gnu.org)和[Pachi](http://pachi.or.cz/)。这两款软件除了能够提供常规功能以外，还自带围棋AI，可以实现简单的人机对战。在[DeepMind](www.deepmind.com)的[AlphaGo](https://deepmind.com/research/alphago/)出现前，他们所配备的围棋AI曾一度是围棋领域所能实现的人工智能的典型代表。还有一些围棋软件仅具备图形界面，可以帮助棋友打谱和人与人的对战，但是本身不配有下棋的AI引擎，围棋软件[Sabaki](https://sabaki.yichuanshen.de)就是其中之一。图1-3显示的是Sabaki的截图。Sabaki自己不带有AI引擎，但是它可以装载其它软件的AI引擎，实现人与AI的对弈。值得称道的一点是，它可以同时装载两种不同的AI引擎，实现黑棋与白棋自动对弈，就好像金庸先生的武侠小说《[神雕侠侣](http://www.jinyongwang.com/shen/)》中提到过的武功---“左右互搏术”。我们可以利用软件的这个特点来评估不同AI间的棋力强弱。
+随着互联网的普及，很多人更乐于在网络上与别人下棋。在中国，“[弈城围棋网](https://github.com/liujiasearch/OneGo-Book/tree/7cd1492a11d0c573f4254f22178e97e641500c47/www.eweiqi.com)”是一个比较著名的围棋对弈网站。在国际上[KGS](http://www.gokgs.com/)是非常热门的围棋对弈站点，它是完全免费的，来自世界各地的人们在上面切磋技艺。网络上一套标准的棋盘如图1-3。大部分的网上对弈棋盘都以两维的形式展现，双方的棋子用白色和黑色的原点表示。除了通过互联网站下棋，一些围棋软件在棋友中使用也十分广泛，这些软件可以为围棋学习提供便利，也可以在亲朋好友间进行对弈。常见的围棋软件有[Gnu-Go](https://github.com/liujiasearch/OneGo-Book/tree/7cd1492a11d0c573f4254f22178e97e641500c47/www.gnu.org)和[Pachi](http://pachi.or.cz/)。这两款软件除了能够提供常规功能以外，还自带围棋AI，可以实现简单的人机对战。在[DeepMind](https://github.com/liujiasearch/OneGo-Book/tree/7cd1492a11d0c573f4254f22178e97e641500c47/www.deepmind.com)的[AlphaGo](https://deepmind.com/research/alphago/)出现前，他们所配备的围棋AI曾一度是围棋领域所能实现的人工智能的典型代表。还有一些围棋软件仅具备图形界面，可以帮助棋友打谱和人与人的对战，但是本身不配有下棋的AI引擎，围棋软件[Sabaki](https://sabaki.yichuanshen.de)就是其中之一。图1-3显示的是Sabaki的截图。Sabaki自己不带有AI引擎，但是它可以装载其它软件的AI引擎，实现人与AI的对弈。值得称道的一点是，它可以同时装载两种不同的AI引擎，实现黑棋与白棋自动对弈，就好像金庸先生的武侠小说《[神雕侠侣](http://www.jinyongwang.com/shen/)》中提到过的武功---“左右互搏术”。我们可以利用软件的这个特点来评估不同AI间的棋力强弱。
 
 ![&#x56FE; 1 - 3 &#x56F4;&#x68CB;&#x8F6F;&#x4EF6;Sabaki&#x7684;&#x68CB;&#x76D8;](.gitbook/assets/image%20%2828%29.png)
 
@@ -96,8 +96,4 @@ description: >-
 要使我们在计算机上制作的围棋AI具有实用性，与他人进行对弈是比不可少的。对弈可以和人进行，也可以和其它AI进行。为了方便人们通过计算机互联网相互交流围棋，[GTP](http://www.lysator.liu.se/~gunnar/gtp/)协议便应运而生。GTP的全称是Smart Game Format，它是一个文本传输协议，目前有GTP 1和GTP 2两个版本。GTP 2从2002年就开始了制定计划，但是似乎GTP 1运作的相当好，所以到目前为止GTP 2还一直停留在拟稿阶段。我们使用GTP 1作为标准的围棋通行协议，但是也尽可能地支持GTP 2，很多网络围棋软件会使用GTP 2中的命令。
 
 要想我们制作的围棋AI能够在互联网平台上像一个普通人一样下棋，我们需要实现完整的GTP协议，不过这是一个费时费力的工作，并且和本书的主题相关性不大，在后面的相关章节中我将尽量引用别人现成的代码，就像牛顿一样，站在巨人的肩膀上。
-
-
-
-
 
