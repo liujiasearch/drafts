@@ -384,10 +384,10 @@ class Net(nn.Module):
 {% code title="myGO/pytorch/dqn.py" %}
 ```python
 moves=self.getLegalMoves(board,player)    #1
-if len(moves)==0:    #2
+if len(moves)==0:    #1
     return Move(is_pass=True)
 choices=[]
-for i in moves:
+for i in moves:    #2
     npout=np.zeros((boardSize,boardSize))    #3
     npout[i]=1    #3
     npout=np.array(npout.flatten(), dtype=np.float32).reshape(1,-1)
@@ -395,7 +395,7 @@ for i in moves:
     npplayer=np.array(npplayer,dtype=np.float32).reshape(1,1)
     npboard=board.print_board(isprint=False)    #3
     npboard=np.array(npboard,dtype=np.float32).reshape(1,1,boardSize,boardSize)
-    with torch.no_grad():
+    with torch.no_grad():    #4
         output=self.net(npboard,npplayer,npout)    #4
     output=output.numpy().flatten()
     choices.append(output)    #5
@@ -405,8 +405,12 @@ move_idx=random.choices
 ```
 {% endcode %}
 
-1. 从当前局面里挑出所有可行的着法；
-2. 如果没有可行的着法就弃掉这一手；
+1. 从当前局面里挑出所有可行的着法，如果没有可行的着法就弃掉这一手；
+2. 评估所有可行的落子点的预期价值；
+3. 网络的输入由三部分组成：落子点，落子方颜色和当前的棋局；
+4. Pytorch如果只用来预测的话，我们不用考虑使用梯度下降来更新参数，为了节约资源，可以手工关闭梯度跟踪；
+5. 我们要比较每个落子点的预期价值，从中挑能使网络输出最大值的落子点作为着法，所以需要先保存每个落子点的输出；
+6. 网络训练时，可以和策略网络一样，按比例随机取出落子点作为着法。这么做的目的是为了使得智能体的互弈可以进行多局而不重复，训练价值网络时就可以有比较多的样本。读者也可以直接取最大价值的着法，然后每对弈一局训练一次，这么做到缺点是网络在训练时会变得不稳定，难以收敛。具体采用哪种方案，读者可以自己通过实验来斟酌比较。
 
 我们使用基于Sarsa-Lambda算法的思想来训练智能体的价值网络。Sarsa-Lambda和Q-Learning以及Sarsa之间最大的区别是它可以对最终获取的价值进行回溯更新。对于每一局棋局我们会保存下每一步落子，然后根据棋局的结果进行回溯。围棋里我们设置Sarsa-Lambda公式里的λ等于1，折现虑P也等于1。在棋局分出胜负前，每一步落子能够得到的即时回报都是零，只有胜负判定后对于获胜的一方得到的价值是1，而输棋的一方得到价值就是-1，我们把这个最终价值用字母R来表示。围棋有全局禁同的规定，所以无所谓我们对记录行棋历史采用重置法或者叠加法，并且由于折现虑和衰减因子都是1，历史记录里的所有记录的值也就都是1了。据此，Sarsa-Lambda算法的公式可以简化为：
 
