@@ -18,5 +18,5 @@
 * [关于合并hdf5文件](guan-yu-he-bing-hdf5-wen-jian.md)
 * [策略梯度](ce-lve-ti-du.md)
 * [DQN](dqn.md)
-* [AC](ac.md)
+* [Actor-Critic算法](ac.md)
 
