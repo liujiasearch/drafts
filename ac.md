@@ -38,7 +38,50 @@ $$
 
 读者可能会意识到，在最初的时候价值网络并没有得到很好的训练，给出的胜负判断是随机的，根据随机的胜负预期得到的价值还有指导意义吗？应该这么说，AC算法是策略网络与价值网络一起在同步学习的，不仅仅是策略网络根据价值网络的指导在学习，策略网络同样也要根据棋局的结果来修正自己的判断能力。即使最开始策略网络对价值网络的学习指导可能存在误导，但是随着价值网络学习的越来约好，判断成功率越来越高，这些过去的错误是会被修正的，并且由于错误判断的胜负预期会导致着法价值远高于棋局价值1或者-1，所以修正的速度会相当快，读者无需担心。因此在训练使用AC算法的神经网络时没有必要预先训练价值网络，价值网络完全可以和策略网络一同训练。只是一开始大部分的样本是用来训练价值网络的，在价值网络没有稳定钱，策略网络一定会有很强烈的抖动，但是随着价值网络趋于稳定，策略网络就能逐渐逼近最优解。
 
+AC网络能够在训练时还具备一定程度上的正则化功能。由于价值网络和策略网络所学习的样本标签具有不同的概率分布，当价值网络通过梯度下降法想调低参数A的时候，策略网络却想调高参数A，两者对参数的调整方向相反，具有抵消的效果，这样就从一定程度上避免了网络发生过拟合的现象。如果两个网络对A参数调增的方向一致，则会导致A参数调整过头，在下一次反向传播时根据实际情况算法会自动将A参数往反方向调整。
 
+![](.gitbook/assets/ac-wang-luo-zheng-ze-hua-shi-yi-tu-.svg)
+
+使用AC算法训练智能体的流程和之前介绍的策略梯度与DQN的流程大同小异。为了稍微凸显出一些区别，我删掉了保存对弈棋谱的流程，直接把智能体互弈的过程并保存到HDF5文件中。另外AC算法的神经网络结构也和我们之前使用的略有不同，之前我们使用的网络都是单个网络的输出，AC网络需要有两个网络，并输出不同含义的预测值。
+
+{% code title="myGO/utility/keras\_modal.py" %}
+```python
+def Model_AC(boardSize):
+    input=keras.layers.Input(shape=(boardSize**2+1,))
+    reshape=keras.layers.Reshape((boardSize,boardSize,1))(input[:,:-1])    #1
+    feature=keras.layers.Conv2D(3**4, 2, strides=1, padding='same', 
+        activation='tanh', kernel_initializer='random_uniform',
+        bias_initializer='zeros')(reshape)
+    feature=keras.layers.Conv2D(3**4, 2, 
+        strides=1, padding='valid', activation='tanh', 
+        kernel_initializer='random_uniform', 
+        bias_initializer='zeros')(feature)
+    feature=keras.layers.Conv2D(3**4, 2, strides=1, 
+        padding='valid', activation='tanh', 
+        kernel_initializer='random_uniform', 
+        bias_initializer='zeros')(feature)
+    feature=keras.layers.Flatten()(feature)
+    lnk=keras.layers.concatenate([feature, 
+        input[:,boardSize**2:boardSize**2+1]], axis=-1)
+    actor=keras.layers.Dense(1024*4, 
+        kernel_initializer='random_uniform',
+        bias_initializer='zeros',activation='tanh')(lnk)
+    actor=keras.layers.Dense(1024*1, 
+        kernel_initializer='random_uniform',
+        bias_initializer='zeros',activation='relu')(actor)
+    actor_output=keras.layers.Dense(boardSize**2,
+        activation='softmax')(actor)
+    critic=keras.layers.Dense(1024*4, 
+        kernel_initializer='random_uniform',
+        bias_initializer='zeros',activation='tanh')(lnk)
+    critic=keras.layers.Dense(1024*2, 
+        kernel_initializer='random_uniform',
+        bias_initializer='zeros',activation='tanh')(critic)
+    critic_ouput=keras.layers.Dense(1,activation='tanh')(actor)
+    return keras.models.Model(inputs=input, 
+        outputs=[actor_output,critic_ouput])    #2
+```
+{% endcode %}
 
 
 

@@ -75,7 +75,51 @@ A和B更新完自己的策略后，又继续玩这个游戏。显然，除了出
 5. 使用样例数据训练智能体A；
 6. 返回第2步，轮回往复。
 
-通过上面的流程我们就完成了一轮智能体的训练。但是一轮学习训练肯定是不够的，就拿前面那个简单的游戏来说，一般也要训练上10轮才能出现收敛的趋势，要显著收敛的话，至少也要训练100轮以上。我们的智能体则可能要训练十几万轮才能够体现出优势。但是无论训练多少轮，都是重复上面的这个过程。接着我们来对这五个过程一一进行说明。
+通过上面的流程我们就完成了一轮智能体的训练。但是一轮学习训练肯定是不够的，就拿前面那个简单的游戏来说，一般也要训练上10轮才能出现收敛的趋势，要显著收敛的话，至少也要训练100轮以上。我们的智能体则可能要训练十几万轮才能够体现出优势。但是无论训练多少轮，都是重复上面的这个过程。
+
+策略梯度算法在神经网络的结构上没有什么特别之处，读者可以用普通的前馈网络或者卷积网络来构造自己的神经网络，不过对于初学者，建议网络不用设置的过深，能运行就好。
+
+{% code title="myGO/utility/keras\_modal.py" %}
+```python
+def Model_PD(boardSize,type='C'): 
+    input=keras.layers.Input(shape=(boardSize**2+1,)) 
+    if type=='D':    #1
+        feature=keras.layers.Dense(64*boardSize**2, kernel_initializer='random_uniform',bias_initializer='zeros',activation='tanh')(input[:,:-1])
+        feature=keras.layers.Dense(32*boardSize**2, kernel_initializer='random_uniform',bias_initializer='zeros',activation='tanh')(feature)
+        feature=keras.layers.Dense(32*boardSize**2, kernel_initializer='random_uniform',bias_initializer='zeros',activation='tanh')(feature)
+        feature=keras.layers.Dense(16*boardSize**2, kernel_initializer='random_uniform',bias_initializer='zeros',activation='tanh')(feature)
+        feature=keras.layers.Dense(16*boardSize**2, kernel_initializer='random_uniform',bias_initializer='zeros',activation='tanh')(feature)
+        lnk=keras.layers.concatenate([feature, input[:,boardSize**2:boardSize**2+1]], axis=-1)
+        logic = keras.layers.Dense(32*boardSize**2, kernel_initializer='random_uniform',bias_initializer='zeros',activation='tanh')(lnk)
+        logic = keras.layers.Dense(64*boardSize**2, kernel_initializer='random_uniform',bias_initializer='zeros',activation='relu')(logic)
+        logic = keras.layers.Dense(32*boardSize**2, kernel_initializer='random_uniform',bias_initializer='zeros',activation='relu')(logic)
+        logic = keras.layers.Dense(32*boardSize**2, kernel_initializer='random_uniform',bias_initializer='zeros',activation='relu')(logic)
+        logic = keras.layers.Dense(16*boardSize**2, kernel_initializer='random_uniform',bias_initializer='zeros',activation='sigmoid')(logic)
+    elif type=='C':    #2
+        reshape=keras.layers.Reshape((boardSize,boardSize,1))(input[:,:-1])    #3
+        feature=keras.layers.Conv2D(3**4, 2, strides=1, padding='same', activation='tanh', kernel_initializer='random_uniform', bias_initializer='zeros')(reshape)
+        feature=keras.layers.Conv2D(3**4, 2, strides=1, padding='valid', activation='tanh', kernel_initializer='random_uniform', bias_initializer='zeros')(feature)
+        feature=keras.layers.Conv2D(3**4, 2, strides=1, padding='valid', activation='tanh', kernel_initializer='random_uniform', bias_initializer='zeros')(feature)
+        feature=keras.layers.Conv2D(3**4*boardSize**2,boardSize-3,activation='tanh',kernel_initializer='random_uniform', bias_initializer='zeros')(feature)
+        feature=keras.layers.Flatten()(feature)
+        lnk=keras.layers.concatenate([feature, input[:,boardSize**2:boardSize**2+1]], axis=-1)
+        logic = keras.layers.Dense(1024*4, kernel_initializer='random_uniform',bias_initializer='zeros',activation='tanh')(lnk)
+        #logic = keras.layers.Dense(1024*2, kernel_initializer='random_uniform',bias_initializer='zeros',activation='elu')(logic)
+        #logic = keras.layers.Dense(1024*2, kernel_initializer='random_uniform',bias_initializer='zeros',activation='elu')(logic)
+        logic = keras.layers.Dense(512*2, kernel_initializer='random_uniform',bias_initializer='zeros',activation='relu')(logic)
+        #logic = keras.layers.Dense(256, kernel_initializer='random_uniform',bias_initializer='zeros',activation='softplus')(logic)
+    else:
+        None
+    output = keras.layers.Dense(boardSize**2,activation='softmax')(logic)
+    return keras.models.Model(inputs=input, outputs=output)
+```
+{% endcode %}
+
+1. 使用全连接网络来搭建神经网络结构，提取图像特征的前馈网络和负责逻辑处理的逻辑网络全部采用简单的全连接网络来实现；
+2. 也可以用卷积网络来负责图像特征提取，从一些已实现的案例来看，卷积网络对图像特征识别上能工作的更好；
+3. 网络的输入是将棋盘上的点平铺了，如果要使用卷积网络，需要先将平铺的输入转换成适合卷积核处理的高维度图片数据格式。
+
+定义好了神经网络的结构，接着我们来对这五个过程一一进行说明。
 
 第一步创建两个相同的神经网络，网络的结构读者可以自行组装，使用前面章节介绍的卷积网络或者全连接网络都可以。对于初学者而言不必将网络创建的过深，虽然可以使用残差结构缓解梯度消失的问题，但是过深的网络会需要更长的训练时间。也不一定必须要创建两个神经网络。由于围棋游戏的拟合函数比较复杂，按照神经网络的规模，网络的参数可能有上百万甚至是上千万个。使用两个神经网络进行对弈会占用大量的内存，如果是放在GPU里进行训练，一般用户的显存也不足以运行两个大规模神经网络。由于智能体A和B的网络结构是相同的，我们可以只创建一个神经网络，然后在不同的时候装载各自的参数即可。智能AI进行对弈也很简单，利用前面章节我们介绍的方法可以轻易地实现机器之间下棋。由于我们只训练智能体A，在互弈时，如果固定A一直执黑棋或者一直执白棋将会导致智能体学习到的内容有限，训练时一定会造成偏差，因此我们应当保证智能体A执黑棋和执白棋的机会均等，不要只下单边。
 
