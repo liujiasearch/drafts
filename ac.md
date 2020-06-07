@@ -42,7 +42,7 @@ AC网络能够在训练时还具备一定程度上的正则化功能。由于价
 
 ![](.gitbook/assets/ac-wang-luo-zheng-ze-hua-shi-yi-tu-.svg)
 
-使用AC算法训练智能体的流程和之前介绍的策略梯度与DQN的流程大同小异。为了稍微凸显出一些区别，我删掉了保存对弈棋谱的流程，直接把智能体互弈的过程并保存到HDF5文件中。另外AC算法的神经网络结构也和我们之前使用的略有不同，之前我们使用的网络都是单个网络的输出，AC网络需要有两个网络，并输出不同含义的预测值。
+使用AC算法训练智能体的流程和之前介绍的策略梯度与DQN的流程大同小异，为了节约篇幅，就不再累述了。为了稍微凸显出一些区别，源码里我删掉了在对弈时保存棋谱的流程，直接把智能体互弈的过程并保存到HDF5文件中。另外AC算法的神经网络结构也和我们之前使用的略有不同，之前我们使用的网络都是单个网络的输出，AC网络需要有两个网络，并输出不同含义的预测值。
 
 {% code title="myGO/utility/keras\_modal.py" %}
 ```python
@@ -52,36 +52,42 @@ def Model_AC(boardSize):
     feature=keras.layers.Conv2D(3**4, 2, strides=1, padding='same', 
         activation='tanh', kernel_initializer='random_uniform',
         bias_initializer='zeros')(reshape)
-    feature=keras.layers.Conv2D(3**4, 2, 
-        strides=1, padding='valid', activation='tanh', 
-        kernel_initializer='random_uniform', 
-        bias_initializer='zeros')(feature)
-    feature=keras.layers.Conv2D(3**4, 2, strides=1, 
-        padding='valid', activation='tanh', 
-        kernel_initializer='random_uniform', 
-        bias_initializer='zeros')(feature)
-    feature=keras.layers.Flatten()(feature)
+    ...
     lnk=keras.layers.concatenate([feature, 
         input[:,boardSize**2:boardSize**2+1]], axis=-1)
     actor=keras.layers.Dense(1024*4, 
         kernel_initializer='random_uniform',
         bias_initializer='zeros',activation='tanh')(lnk)
-    actor=keras.layers.Dense(1024*1, 
-        kernel_initializer='random_uniform',
-        bias_initializer='zeros',activation='relu')(actor)
+    ...
     actor_output=keras.layers.Dense(boardSize**2,
         activation='softmax')(actor)
     critic=keras.layers.Dense(1024*4, 
         kernel_initializer='random_uniform',
         bias_initializer='zeros',activation='tanh')(lnk)
-    critic=keras.layers.Dense(1024*2, 
-        kernel_initializer='random_uniform',
-        bias_initializer='zeros',activation='tanh')(critic)
+    ...
     critic_ouput=keras.layers.Dense(1,activation='tanh')(actor)
     return keras.models.Model(inputs=input, 
         outputs=[actor_output,critic_ouput])    #2
 ```
 {% endcode %}
+
+1. 由于要使用卷积网络来提取棋盘的特征，而输入是平摊后棋盘数据，因此先将输入格式调整为高维度格式。读者也可以直接输入高纬度的棋盘数据；
+2. 之前我们的网络都只有一个输出，AC网络需要分别输出策略和评价。Keras使用数组将多个网络的多个数组拼接在一起，作为AC网络的整体输出。
+
+在使用Keras初始化网络学习的模式参数时，我们不再只有一个输出项目，因此在需要调整一下模型compile里的参数。我们的策略网络和策略梯度中一样使用交叉熵作为代价函数，而价值网络和DQN里的一样，采用均方误差作为代价函数。由于是不同的网络结构，策略网络和价值网络在输出误差（预测与标签的差异）上可能会存在数量级的差异，而这两个网络在梯度更新时，又会更新到公用的卷积网络部分，数量级的差距可能会导致一个网络无法更新，为了解决这个问题，我们加入梯度更新权值参数来平衡这两种网络在数量级上的差距。
+
+{% code title="myGO/utility/keras\_modal.py" %}
+```python
+def compile_ac(self):
+        self.model.compile(optimizer=keras.optimizers.SGD(learning_rate=0.001),
+            loss=['categorical_crossentropy', 'mse'],    #1
+            loss_weights=[1,.5],    #2
+            metrics=['accuracy'])
+```
+{% endcode %}
+
+1. 同时采用交叉熵和均方误差来作为代价函数。参数的顺序必须和网络的输出顺序一致，如果顺序有误，不会在程序运行时报错，但网络在实际表现上会和预期的行为差距很大；
+2. 为两个网络的误差值增加权值比例，读者需要根据自己网络的实际情况来调整策略网络与价值网络的误差权值比例。
 
 
 
