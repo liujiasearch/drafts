@@ -90,5 +90,31 @@ def compile_ac(self):
 1. 同时采用交叉熵和均方误差来作为代价函数。参数的顺序必须和网络的输出顺序一致，如果顺序有误，不会在程序运行时报错，但网络在实际表现上会和预期的行为差距很大；
 2. 为两个网络的误差值增加权值比例，读者需要根据自己网络的实际情况来调整策略网络与价值网络的误差权值比例。
 
-前面的两种强化学习方案中我们只在HDF5里保存了棋局，着法以及胜负。在AC算法中，智能体的策略网络学习的标签不再是胜负获取的价值，而是胜负获取的价值减去智能体在下棋时对棋局胜负的预期。
+前面的两种强化学习算法中我们只在HDF5里保存了棋局，着法以及胜负。在AC算法中，智能体的策略网络学习的标签不再是胜负获取的价值，而是胜负获取的价值减去智能体在下棋时对棋局胜负的预期。在AC算法中我们还需要再多保存对局胜负的预期。
+
+```python
+def save_ac(self,moves_his,result,h5file):    #1
+    if result>0:
+        winner=1
+    elif result<0:
+        winner=-1
+    else:
+        return
+    h5file=HDF5(h5file,mode='a')
+    grpName=hashlib.new('md5',
+        str(moves_his).encode(encoding='utf-8')).hexdigest()    #2
+    h5file.add_group(grpName)
+    h5file.set_grp_attrs(grpName,'winner',winner)    #3
+    h5file.set_grp_attrs(grpName,'size',self.board.size)    #3
+    for i,dset in enumerate(moves_his):
+        h5file.add_dataset(grpName,str(i),dset[0])    #4
+        h5file.set_dset_attrs(grpName,str(i),'player',dset[1])    #4
+        h5file.set_dset_attrs(grpName,str(i),'target',dset[2])    #4
+        h5file.set_dset_attrs(grpName,str(i),'value',dset[3])    #4
+```
+
+1. 由于在AC算法的演示里我们没有保存棋谱，HDF5里的样本直接来源于棋局，因此需要输入一局棋的全部着法；
+2. 我们给每局棋做MD5签名，并用这个签名作为棋局的名字，这样做的好处是可以防止重复记录一模一样的棋局；
+3. HDF5的group里设置赢棋方和棋盘的尺寸；
+4. 具体每一回合保存棋盘、落子方，着法和对输赢的预期。
 
