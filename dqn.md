@@ -425,54 +425,56 @@ $$
 
 {% code title="myGO/pytorch/dqn.py" %}
 ```python
-for i in range(5000):    #1
-    bot1_win,bot2_win=play_against_the_other(dq,bot1,bot2,20)    #2
+criterion = nn.MSELoss()    #1
+for i in range(5000):    #2
+    bot1_win,bot2_win=play_against_the_other(dq,bot1,bot2,20)    #3
     total=bot1_win+bot2_win
-    if binom_test(bot1_win, total, 0.5)<.05 and bot1_win/total>.5:    #3
+    if binom_test(bot1_win, total, 0.5)<.05 and bot1_win/total>.5:    #4
         torch.save(bot1.net.state_dict(), model_old)
         bot2.net.load_state_dict(torch.load(model_old))
     else:
         None
-    make_tran_data(games_doc,data_file)    #4
-    games=HDF5(data_file,mode='r')    #5
-    x_,y_=games.get_dl_dset()    #6
+    make_tran_data(games_doc,data_file)    #5
+    games=HDF5(data_file,mode='r')    #6
+    x_,y_=games.get_dl_dset()    #7
     train_size=y_.shape[0]
-    x_train_1=x_[:,:-2]    #7
-    x_train_2=x_[:,-2]    #7
+    x_train_1=x_[:,:-2]    #8
+    x_train_2=x_[:,-2]    #8
     x_train_3=y_    #7
-    y_train=np.zeros(x_train_2.shape)    #7
+    y_train=np.zeros(x_train_2.shape)    #8
     winner=x_[:,-1]
     for  i,y in enumerate(x_train_2==winner):
         if y==False:
-            y_train[i]=0    #8
+            y_train[i]=0    #9
         else:
-            y_train[i]=1    #8
-    indexes=[i for i in range(train_size)]    #9
-    random.shuffle(indexes)    #9
-    for i in indexes:    #9
-        optimizer.zero_grad()    #10
+            y_train[i]=1    #9
+    indexes=[i for i in range(train_size)]    #10
+    random.shuffle(indexes)    #10
+    for i in indexes:    #10
+        optimizer.zero_grad()    #11
         output=bot1.net(x_train_1[i:i+1],
-            x_train_2[i:i+1],x_train_3[i:i+1])    #10
-        loss = criterion(output, y_train[i:i+1])    #10
-        loss.backward()    #10
-        optimizer.step()    #10
-    torch.save(bot1.net.state_dict(), model_current)    #11
-torch.save(bot1.net.state_dict(), model_file)    #12
+            x_train_2[i:i+1],x_train_3[i:i+1])    #11
+        loss = criterion(output, y_train[i:i+1])    #11
+        loss.backward()    #11
+        optimizer.step()    #11
+    torch.save(bot1.net.state_dict(), model_current)    #12
+torch.save(bot1.net.state_dict(), model_file)    #13
 ```
 {% endcode %}
 
-1. 学习5000轮，读者设置成无限循环也可以；
-2. 让两个智能体互弈20局，至于是20还是50局读者可以自己决定，这个参数主要是影响显著性指标的可信度；
-3. 如果智能体A显著强于智能体B，就把A的价值网络参数同步给智能体B。显著性指标设置成0.05，如果要提高显著性的精度，第二步对弈的局数也要相应提高；
-4. 把对弈的棋局保存成SGF棋谱；
-5. 把棋谱转译成HDF5格式文件，方便取出训练样本；
-6. 从HDF5文件里取出训练样本；
-7. 对训练样本进一步解析与构造，获得符合价值网络训练用的输入与样本标签格式；
-8. 对样本标签进一步加工，将标签值转译为价值，如果是输棋方的落子，就认为这步棋的价值等于零，赢棋方的落子就认为具有价值1；
-9. Pytorch在使用多批次训练时得手工构造训练过程，一批次训练多少样本由参数train\_size来控制。同时加入了打乱样本的步骤以进一步降低样本之间的相关性；
-10. Pytorch的标准梯度下降更新网络参数的流程；
-11. 每学习完一轮，我们就保存一下智能体A的网络参数，以免万一非预料内的异常情况发生，白白浪费了我们的训练过程与时间；
-12. 整个训练过程（5000轮）完成后保存智能体的网络参数。
+1. DQN网络只有一个输出，我们用均方误差作为损失函数；
+2. 学习5000轮，读者设置成无限循环也可以；
+3. 让两个智能体互弈20局，至于是20还是50局读者可以自己决定，这个参数主要是影响显著性指标的可信度；
+4. 如果智能体A显著强于智能体B，就把A的价值网络参数同步给智能体B。显著性指标设置成0.05，如果要提高显著性的精度，第二步对弈的局数也要相应提高；
+5. 把对弈的棋局保存成SGF棋谱；
+6. 把棋谱转译成HDF5格式文件，方便取出训练样本；
+7. 从HDF5文件里取出训练样本；
+8. 对训练样本进一步解析与构造，获得符合价值网络训练用的输入与样本标签格式；
+9. 对样本标签进一步加工，将标签值转译为价值，如果是输棋方的落子，就认为这步棋的价值等于零，赢棋方的落子就认为具有价值1；
+10. Pytorch在使用多批次训练时得手工构造训练过程，一批次训练多少样本由参数train\_size来控制。同时加入了打乱样本的步骤以进一步降低样本之间的相关性；
+11. Pytorch的标准梯度下降更新网络参数的流程；
+12. 每学习完一轮，我们就保存一下智能体A的网络参数，以免万一非预料内的异常情况发生，白白浪费了我们的训练过程与时间；
+13. 整个训练过程（5000轮）完成后保存智能体的网络参数。
 
 一局棋结束后，棋局中发生的每一步都被认为能够获取到相同的价值。虽然一局棋中每一步都能导致未来相同的价值期望这听上去有点荒谬，但是把这个行为放到一百万、一千万局对弈里来看，意义不大的落子在有胜有负的棋局中学习的效果必将会相互抵消，从而能让网络输出明确高价值或者明确低价值的落子点必定是对棋局的结果起到显著影响的那些着法。这一点和策略网络里的算法思想是一致的。
 
