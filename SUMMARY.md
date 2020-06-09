@@ -19,4 +19,5 @@
 * [策略梯度](ce-lve-ti-du.md)
 * [DQN](dqn.md)
 * [Actor-Critic算法](ac.md)
+* [AlphaGo](alphago.md)
 
