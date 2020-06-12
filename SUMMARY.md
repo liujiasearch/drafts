@@ -20,4 +20,5 @@
 * [DQN](dqn.md)
 * [Actor-Critic算法](ac.md)
 * [AlphaGo](alphago.md)
+* [AlphaZero](alphazero.md)
 
