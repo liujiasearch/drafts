@@ -1,5 +1,6 @@
 ---
-description: Actor-Critic算法简称AC，中文翻译过来叫做演员-评论家算法。这个算法结合了前面两章的算法，目的是通过价值网络来指导策略梯度网络更加有效地学习。
+description: >-
+  Actor-Critic算法下文都将其简称为AC，中文翻译过来叫做演员-评论家算法。这个算法结合了策略梯度与Q-Learning算法，目的是通过价值网络来指导策略梯度网络更加有效地学习。
 ---
 
 # Actor-Critic算法
@@ -42,7 +43,7 @@ AC网络能够在训练时还具备一定程度上的正则化功能。由于价
 
 ![](.gitbook/assets/ac-wang-luo-zheng-ze-hua-shi-yi-tu-.svg)
 
-使用AC算法训练智能体的流程和之前介绍的策略梯度与DQN的流程大同小异。为了稍微凸显出一些区别，我删掉了保存对弈棋谱的流程，直接把智能体互弈的过程并保存到HDF5文件中。另外AC算法的神经网络结构也和我们之前使用的略有不同，之前我们使用的网络都是单个网络的输出，AC网络需要有两个网络，并输出不同含义的预测值。
+使用AC算法训练智能体的流程和之前介绍的策略梯度与DQN的流程大同小异，为了节约篇幅，就不再累述了。为了稍微凸显出一些区别，源码里我删掉了在对弈时保存棋谱的流程，直接把智能体互弈的过程并保存到HDF5文件中。另外AC算法的神经网络结构也和我们之前使用的略有不同，之前我们使用的网络都是单个网络的输出，AC网络需要有两个网络，并输出不同含义的预测值。
 
 {% code title="myGO/utility/keras\_modal.py" %}
 ```python
@@ -52,36 +53,74 @@ def Model_AC(boardSize):
     feature=keras.layers.Conv2D(3**4, 2, strides=1, padding='same', 
         activation='tanh', kernel_initializer='random_uniform',
         bias_initializer='zeros')(reshape)
-    feature=keras.layers.Conv2D(3**4, 2, 
-        strides=1, padding='valid', activation='tanh', 
-        kernel_initializer='random_uniform', 
-        bias_initializer='zeros')(feature)
-    feature=keras.layers.Conv2D(3**4, 2, strides=1, 
-        padding='valid', activation='tanh', 
-        kernel_initializer='random_uniform', 
-        bias_initializer='zeros')(feature)
-    feature=keras.layers.Flatten()(feature)
+    ...
     lnk=keras.layers.concatenate([feature, 
         input[:,boardSize**2:boardSize**2+1]], axis=-1)
     actor=keras.layers.Dense(1024*4, 
         kernel_initializer='random_uniform',
         bias_initializer='zeros',activation='tanh')(lnk)
-    actor=keras.layers.Dense(1024*1, 
-        kernel_initializer='random_uniform',
-        bias_initializer='zeros',activation='relu')(actor)
+    ...
     actor_output=keras.layers.Dense(boardSize**2,
         activation='softmax')(actor)
     critic=keras.layers.Dense(1024*4, 
         kernel_initializer='random_uniform',
         bias_initializer='zeros',activation='tanh')(lnk)
-    critic=keras.layers.Dense(1024*2, 
-        kernel_initializer='random_uniform',
-        bias_initializer='zeros',activation='tanh')(critic)
+    ...
     critic_ouput=keras.layers.Dense(1,activation='tanh')(actor)
     return keras.models.Model(inputs=input, 
         outputs=[actor_output,critic_ouput])    #2
 ```
 {% endcode %}
 
+1. 由于要使用卷积网络来提取棋盘的特征，而输入是平摊后棋盘数据，因此先将输入格式调整为高维度格式。读者也可以直接输入高纬度的棋盘数据；
+2. 之前我们的网络都只有一个输出，AC网络需要分别输出策略和评价。Keras使用数组将多个网络的多个数组拼接在一起，作为AC网络的整体输出。
 
+在使用Keras初始化网络学习的模式参数时，我们不再只有一个输出项目，因此在需要调整一下模型compile里的参数。我们的策略网络和策略梯度中一样使用交叉熵作为代价函数，而价值网络和DQN里的一样，采用均方误差作为代价函数。由于是不同的网络结构，策略网络和价值网络在输出误差（预测与标签的差异）上可能会存在数量级的差异，而这两个网络在梯度更新时，又会更新到公用的卷积网络部分，数量级的差距可能会导致一个网络无法更新，为了解决这个问题，我们加入梯度更新权值参数来平衡这两种网络在数量级上的差距。
+
+{% code title="myGO/utility/keras\_modal.py" %}
+```python
+def compile_ac(self):
+        self.model.compile(optimizer=keras.optimizers.SGD(learning_rate=0.001),
+            loss=['categorical_crossentropy', 'mse'],    #1
+            loss_weights=[1,.5],    #2
+            metrics=['accuracy'])
+```
+{% endcode %}
+
+1. 同时采用交叉熵和均方误差来作为代价函数。参数的顺序必须和网络的输出顺序一致，如果顺序有误，不会在程序运行时报错，但网络在实际表现上会和预期的行为差距很大；
+2. 为两个网络的误差值增加权值比例，读者需要根据自己网络的实际情况来调整策略网络与价值网络的误差权值比例。
+
+在智能体互弈时，策略网络的下棋方法和梯度策略中使用的是一样的，我们按照概率比例从策略中选择着法，训练过程也是和策略梯度的训练方法一样。价值网络在下棋的过程中不起作用，我们仅保存价值网络的输出值，以备后续训练时知道策略网络的学习时使用。价值网络的训练过程比较简单，我们输入棋局，并将输出与最终棋局的实际胜负做比较，利用均方误差做反向梯度计算。具体的过程就不在本章再重复了，读者可以复习前两章中关于它们各自的内容，也可以直接阅读源码（`myGO/actor_critic/a_c.py`），它在实现上和之前的两种算法是非常相近的。
+
+前面的两种强化学习算法中我们只在HDF5里保存了棋局，着法以及胜负。在AC算法中，智能体的策略网络学习的标签不再是胜负获取的价值，而是胜负获取的价值减去智能体在下棋时对棋局胜负的预期。在AC算法中我们还需要再多保存对局胜负的预期。
+
+{% code title="myGO/board\_fast.py" %}
+```python
+def save_ac(self,moves_his,result,h5file):    #1
+    if result>0:
+        winner=1
+    elif result<0:
+        winner=-1
+    else:
+        return
+    h5file=HDF5(h5file,mode='a')
+    grpName=hashlib.new('md5',
+        str(moves_his).encode(encoding='utf-8')).hexdigest()    #2
+    h5file.add_group(grpName)
+    h5file.set_grp_attrs(grpName,'winner',winner)    #3
+    h5file.set_grp_attrs(grpName,'size',self.board.size)    #3
+    for i,dset in enumerate(moves_his):
+        h5file.add_dataset(grpName,str(i),dset[0])    #4
+        h5file.set_dset_attrs(grpName,str(i),'player',dset[1])    #4
+        h5file.set_dset_attrs(grpName,str(i),'target',dset[2])    #4
+        h5file.set_dset_attrs(grpName,str(i),'value',dset[3])    #4
+```
+{% endcode %}
+
+1. 由于在AC算法的演示里我们没有保存棋谱，HDF5里的样本直接来源于棋局，因此需要输入一局棋的全部着法；
+2. 我们给每局棋做MD5签名，并用这个签名作为棋局的名字，这样做的好处是可以防止重复记录一模一样的棋局；
+3. HDF5的group里设置赢棋方和棋盘的尺寸；
+4. 具体每一回合保存棋盘、落子方，着法和对输赢的预期。
+
+AC算法本质上还是策略梯度的方法，只是优化了其学习时的效率，可能在训练回合数不多的情况下其表现会优于策略梯度，但是如果双方都训练了足够多的样本，在表现上应该是不分伯仲的，或者说是差不多的。但是不管是用策略梯度也好，DQN或者AC算法也好，由于围棋游戏的复杂度实在是太高，网络拟合的能力受限于其网络结构以及我们的计算机算能，所以即使用了强化学习，智能体棋力的提升也是有限的。后面章节我将介绍AlphaGo和AlphaZero使用到的方法，这两种方法都是将蒙特卡洛搜索树方法与强化学习相结合。AlphaGo击败了9段李世石，而AlphaZero则轻易地击败了AlphaGo。
 
