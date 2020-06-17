@@ -21,4 +21,5 @@
 * [Actor-Critic算法](ac.md)
 * [AlphaGo](alphago.md)
 * [AlphaZero](alphazero.md)
+* [零碎记录](ling-sui-ji-lu.md)
 
