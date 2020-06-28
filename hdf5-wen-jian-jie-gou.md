@@ -10,14 +10,6 @@
 
 
 
-![alphago &#x4E0B;&#x6CD5;](.gitbook/assets/alphago-sui-ji-.svg)
-
-
-
-
-
-![](.gitbook/assets/alphago_zero-1-.svg)
-
 n仅指最近的下一层节点访问的次数。由于落子的顺序不同，会存在上一层不同的棋形共享下一层的情况，因此N&lt;=n。为了辨识出共享棋形的子节点，我们用佐布里斯特散列来标识唯一的棋形，也就是节点。
 
 ![alphagozero&#x7684;&#x7F51;&#x7EDC;](.gitbook/assets/wang-luo-jie-gou-.svg)

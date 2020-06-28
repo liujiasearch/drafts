@@ -5,6 +5,7 @@
 * [第二章 实现一个围棋软件](untitled-1.md)
 * [第三章 传统的棋类智能](untitled.md)
 * [第四章 机器学习入门](fu-lu-1-ji-qi-xue-xi-ru-men.md)
+* [第五章 用机器学习的方法来做围棋智能体](di-wu-zhang-yong-ji-qi-xue-xi-de-fang-fa-lai-zuo-wei-qi-zhi-neng-ti.md)
 * [附录2：Keras入门指南](fu-lu-2keras-ru-men-zhi-nan.md)
 * [附录3：Numpy和其它工具的快速入门指南](fu-lu-3numpy-he-qi-ta-gong-ju-de-kuai-su-ru-men-zhi-nan.md)
 * [temp](temp.md)

@@ -347,5 +347,49 @@ go\_engine\_program.py引入了我们自己编写的一些模组块，使用`pyi
 
 ## 让我们的围棋AI自己去网上下棋
 
-为了让我们自制的AI程序能够在网络上下棋，必须要实现全部的GTP协议，对于某些在线对弈网站可能还需要针对网站自定义的命令，实现一些功能。
+为了让我们自制的AI程序能够在网络上下棋，必须要实现全部的GTP协议，对于某些在线对弈网站可能还需要针对网站自定义的命令，实现一些功能。KGS（Kiseido Go Server）是目前网络上最活跃的围棋对弈服务器之一，每天服务器上都会聚集超过一千名全世界的围棋爱好者在上面下棋，不仅仅是人类，KGS还设有专门的电脑机器人房间，提供全球各地的围棋智能体在上面下棋。如果我们已经有了一个可以接收GTP协议的智能围棋机器人，我们就可以使用KGS提供的工具将我们的智能体接入网站，并与网站上的其他人进行围棋的较量。
+
+KGS提供了专门的java工具[kgsGtp](http://www.gokgs.com/download.jsp)用来对接我们的围棋智能体。读者需要自己的计算机上安装java的[运行环境](http://java.com/)（）才能使用这个工具。使用kgsGtp的方法和使用围棋GUI非常类似，要做的也仅仅是提供一个可以支持GTP协议的智能体，其它的工作则交由这个工具来处理。首先我们需要在KGS上注册一个账号，KGS账号的使用是完全免费的。接着要做的就是配置一个关于智能体的配置文件，这里我展示使用Gnu Go在KGS上下棋的配置文件，用户只需要调整这个配置相关的参数，就可以使得自己的围棋智能体一样在KGS上下棋了。
+
+{% code title="myGnuGoBot.ini" %}
+```python
+engine=gnugo.exe --mode gtp --quiet
+name=myGnuGoBot
+password=myPassword
+room=Computer Go
+mode=custom
+reconnect=true
+rules=chinese
+rules.boardSize=19
+rules.time=15:00+5x0:15
+talk=I'm a computer.
+gameNotes=Computer program GNU Go
+```
+{% endcode %}
+
+读者需要一些英语单词的基础知识便可以明白上面这个配置文件的内容。还需要注意，这个配置是大小写敏感的，所以不要混用。当我们下载好kgsGtp工具后，压缩包里有一个kgsGtp.xhtml文件，这是一个kgsGtp说明书文件，用浏览器打开后读者可以了解更细节的内容，包括各种参数命令和使用场景等，我在这里就不做翻译工作了。
+
+有了java运行环境，有了kgsGtp工具，有了能够按GTP协议运行的围棋智能体，有了KGS账号，接着只需要运行命令`java -jar kgsGtp.jar myGnuGoBot.ini`就能让我们的围棋智能体在网络上和其他人类对手或者计算机一较高下了。
+
+如果读者觉得使用别人的工具不是很方便，或者有的人有一些特殊控制上的需求，KGS现在也提供利用json文件与服务器进行交互，读者可以自己实现一个类似kgsGtp的控制软件。KGS的json文件的传递方法和网站与用户交换json文件并没有什么区别，这部分的内容纯粹是计算机工程上的事情了，与本文无关，也就不再累述了，详细的可以参考KGS提供的[文档](http://www.gokgs.com/json/)。
+
+互联网上还有一个专门提供给计算机之间对弈的网站叫CGOS，它和KGS的最大区别是CGOS平台只提供计算机程序之间对弈围棋，人类选手不能在上面进行围棋切磋。CGOS由于只需要提供计算机下棋的环境，因此在规则上要比KGS简单许多。CGOS的客户端软件[cgosGtp](http://www.yss-aya.com/cgos/)和kgsGtp一样，也需要一个配置文件，但是cgosGtp的配置文件要简单许多。
+
+{% code title="config.txt" %}
+```python
+%section server
+    server yss-aya.com
+    port 6809
+
+%section player
+     name      go11test
+     password  secretpass
+     invoke    go11.exe
+     priority  7S
+```
+{% endcode %}
+
+同样，关于cgosGtp更多详细的细节在软件下载包里有说明，读者可以自行下载下来研究。如果觉得cogsGtp不够灵活，可以使用Christian Nentwich提供的Python版本[cgos-client-python](http://cgos.sourceforge.net/client-python/)。
+
+国内有很好的围棋群众基础，但是能够支持计算机AI接入的我只发现了[野狐围棋](https://www.foxwq.com/soft/aiprogramandmanual.html)这个平台。野狐围棋在接入文档上还是比较友好的，但缺点是接入前需要申请并通过审批。如果读者对国内的围棋游戏平台不满意的话，可以架设自己的公众围棋对弈服务。[OGS](https://online-go.com)是一个优秀的[开源](https://github.com/online-go)的互联网在线围棋对弈平台，它有一套完整的在线围棋对弈机制并且支持计算机智能机器人接入。
 
