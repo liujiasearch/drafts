@@ -14,7 +14,6 @@
 * [附录4：厉害的象棋游戏AI](fu-lu-4-na-xie-li-hai-de-xiang-qi-you-xi-ai.md)
 * [附录5：不同地区的围棋规则](fu-lu-5-bu-tong-de-wei-qi-gui-ze.md)
 * [HDF5文件结构](hdf5-wen-jian-jie-gou.md)
-* [机器学习应用在围棋上](ji-qi-xue-xi-ying-yong-zai-wei-qi-shang.md)
 * [围棋棋谱](wei-qi-qi-pu.md)
 * [关于合并hdf5文件](guan-yu-he-bing-hdf5-wen-jian.md)
 * [策略梯度](ce-lve-ti-du.md)
@@ -22,5 +21,5 @@
 * [Actor-Critic算法](ac.md)
 * [AlphaGo](alphago.md)
 * [AlphaZero](alphazero.md)
-* [零碎记录](ling-sui-ji-lu.md)
+* [结尾](ling-sui-ji-lu.md)
 

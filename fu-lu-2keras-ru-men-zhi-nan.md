@@ -72,8 +72,8 @@ import numpy as np
 import tensorflow as tf  #1
 
 def data_set(stop):  #2
-  i=0  #3
-  while i<stop:  #3
+  i=0  #2
+  while i<stop:  #2
     x=np.random.randint(-1,2,size=(10,10))
     if x.sum()>0:
       y=1
@@ -81,7 +81,8 @@ def data_set(stop):  #2
       y=-1
     else:
       y=0
-    i+=1  #3
+    i+=1
+    x=x[:,:,np.newaxis]  #3
     yield x,y  #4
 
 ds_counter=tf.data.Dataset.from_generator(  #5
@@ -96,11 +97,89 @@ for x,y in ds_counter.repeat(2).batch(10).take(5):  #6
 ```
 
 1. 数据流水线是TensorFlow的工具，所以要引入TensorFlow库来生成数据流水线。除了TensorFLow，Pytorch和百度的Paddle等机器学习的框架都有类似数据流水线的工具；
-2. 由于我们的数据发生器是随机生成数据，参数stop用来限制迭代器的数据规模，否则迭代可以无休无止的进行下去；
-3. 用参数i来记录迭代次数，作为判断限制数据发生器规模的依据；
+2. 由于我们的数据发生器是随机生成数据，参数stop用来限制迭代器的数据规模，否则迭代可以无休无止的进行下去。用参数i来记录迭代次数，作为判断限制数据发生器规模的依据；
+3. 由于二维数据一般我们会使用到卷积网络，而通道是卷积网络必须的一个维度，所以在二维数据后再增加一个通道维度。老版本的Keras由于还支持Theano等其它后端，所以卷积方法的参数里会有一个 data\_format参数用以指定通道维度是在张量的第一维度还是最末维度。最新版本的Keras只能用TensorFlow来作为后端，这个参数也基本成为了历史。TensorFlow的默认约定是通道必须放在张量的最后一个维度；
 4. 产出的顺序为样本、标签。Keras在读取数流水线时默认是这个顺序，这也符合我们的直觉；
 5. 数据发生器和机器学习的数据流水线还不是一个东西，需要调用Dataset的from\_generator方法来生成数据流水线。参数顺序依次为数据发生器、数据发生器的参数、数据发生器输出的数据类型和输出的数据格式。数据格式不是一个必选参数，但是强烈建议补足这个参数；
 6. 测试数据流水线工作是否正常。数据流水线的输出可以用repeat、batch和take等方法来获取批量的数据。这些方法我们后面不会用到，但是读者可以尝试看看他们的使用效果，也许在一些本书之外的情况下会使用到。
+
+神经网络训练后能否达到预期的效果，很大程度上与我们定义的代价函数是息息相关的。好的代价函数能使得网络在训练的过程中朝着对设计目标有利的方向收敛。神经网络的训练方法主要是依赖于反向传播，反向传播不是什么新的技术，但是这几年才火热起来靠的还是硬件水平的发展，使得计算机的算能能够满足大规模神经网络的逆向梯度计算。但是单纯的梯度下降算法在收敛速度上还是存在一些不足，因此后来又发展出了许多别的基于梯度下降的优化算法，比如Adam算法等。Keras的compile方法就是专门为神经网络模型指定代价函数与反向传播时使用的梯度下降优化算法的。有了这两个参数，Keras就可以为我们自动来训练神经网络了。触发Keras来计算神经网络的方法叫fit。fit方法的核心参数就是神经网络训练时需要的输入样本和样本对应的标签。还有一些其它参数，读者可以查询Keras官网上的API手册，这里就不再多费文字了。
+
+神经网络训练完成后，我们可以调用Keras的predict方法来看看网络的实际泛化效果，predict方法的输入主要就是待评估的数据，这个方法应该是神经网络框架里最简单的一个了。下面我们将通过一个卷积网络加全连接网络来实现对刚才设计的数据发生器产出的数据进行预测。读者需要意识到，这个例子仅仅是为了演示完整的Keras使用过程，在神经网络中引入卷积网络的意义几乎是没有的，因为我们的二维数据是随机产生的，并不会有什么图形排列上的特征，在实际解决问题的过程中需要根据问题的类型来选择神经网络的结构。
+
+{% code title="myGO/basics/keras\_basic.py" %}
+```python
+from tensorflow import keras    #1
+def model():    #2
+    inp=keras.layers.Input(shape=(10,10,1))
+    x=keras.layers.Conv2D(100, 10)(inp)    #3
+    x=keras.layers.Flatten()(x)    #4
+    x=keras.layers.Dense(128)(x)
+    outp=keras.layers.Dense(1,activation='tanh')(x)
+    return keras.models.Model(inputs=inp, outputs=outp)
+
+class example:
+    def __init__(self):
+        self.model=model()
+        self.dset=tf.data.Dataset.from_generator(
+                data_set,
+                args=[1000],
+                output_types=(tf.int32,tf.int32),
+                output_shapes=([10,10,1], ())
+                )
+    def ex_compile(self):
+        self.model.compile(    #5
+            optimizer=keras.optimizers.Adam(learning_rate=0.001),
+            loss=keras.losses.MeanSquaredError(),
+            metrics=['mse'])
+    def ex_fit(self,batchSize,epochs):
+        dst=self.dset.batch(batchSize,drop_remainder=True)    #6
+        self.model.fit(dst,epochs=epochs)    #6
+    def ex_predict(self,examples):
+        return self.model.predict(examples)    #7
+
+test=example()    #8
+test.ex_compile()    #8
+test.ex_fit(100,200)    #8
+
+testSet=tf.data.Dataset.from_generator(    #9
+            data_set,
+            args=[100],
+            output_types=(tf.int32,tf.int32),
+            output_shapes=([10,10,1], ())
+            )
+
+test_set=[]    #9
+test_y=[]    #9
+for x,y in testSet.take(50):    #9
+    test_set.append(x)    
+    test_y.append(y)
+test_set=np.array(test_set)    #9
+test_y=np.array(test_y)    #9
+
+y_=test.ex_predict(test_set)    #10
+y_[y_<-0.3]=-1    #11
+y_[y_>0.3]=1    #11
+y_[abs(y_)!=1]=0    #11
+y_=np.array(y_,dtype=int).flatten()    #11
+
+print(y_==test_y)    #12
+
+```
+{% endcode %}
+
+1. 要使用Keras现在需要从TensorFlow中利用，也可以直接通过pip工具安装Keras，但是不推荐；
+2. 神经网络的架构由卷积网络和全连接网络组成；
+3. 这个示例要解决的问题与数据在空间上的结构没什么关系，所以我们直接将包含一个通道的二维数据\(10,10,1\)通过卷积变成一维数据\(1,1,100\)；
+4. 上一步的数据虽然内容是一维的，但是形式上还是包含一百个通道的二维数据\(1,1,100\)。高维到一维还需要通过Flatten方法降维度\(100,\)；
+5. 为这个应用问题选择均方差代价函数，反向传播使用Adam梯度下降优化方法，训练过程的数据展现采用均方差的方法；
+6. 当我们使用数据流水线作为训练的输入样本来源时，小批量的训练数据量可以由数据流水线直接控制，fit方法中只需要指定训练回合数即可；
+7. Keras的预测方法只需要输入待评估的数据即可；
+8. 实例化一个Keras训练对量并调用compile方法完成模型的初始化。训练时调用fit方法，Keras就会自动为我们完成神经网络的学习过程；
+9. 模型的验证数据需要和训练样本的数据分布一致，这里用数据发生器产生验证数据，并做一些numpy格式的转换；
+10. 调用predict方法来查看模型的泛化效果；
+11. 模型的训练次数是有限的，导致预测和实际情况存在一定的误差，我们通过对数据后处理，使其满足与样本标签一样的整数形式；
+12. 基本上预测数据与实际的标签是一致的，在实践过程中，泛化精度可以达到98%以上，如果训练批次足够长，达到99.9999%也是完全可以的。
 
 任何事情都是有利有弊，使用Keras直接接入数据流水线也限制了我们的灵活性。Keras只支持从数据流水线里获取一个输入和一个输出。如果神经网络的结构需要两类或者两类以上的数据源作为输入时，从一个数据流水线里获取样本就会遇到困难。这里我们介绍两种方法来克服多个数据源输入的问题。 
 
