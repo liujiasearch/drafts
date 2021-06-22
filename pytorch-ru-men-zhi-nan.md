@@ -149,6 +149,27 @@ def train(dataloader, model, loss_fn, optimizer):
 8. 根据反向梯度的计算结果更新神经网络的参数；
 9. 每100次小批量训练后输出一次训练情况。
 
+训练完成后，需要通过测试集来验证网络的泛化能力，测试方法通常来说比较简单，很多部分和训练过程是类似的。
+
+```text
+def test(dataloader, model, loss_fn):
+    size = len(dataloader.dataset)
+    model.eval()    #1
+    test_loss, correct = 0, 0
+    with torch.no_grad():    #2
+        for X, y in dataloader:
+            X, y = X.to(device), y.to(device)
+            pred = model(X)
+            test_loss += loss_fn(pred, y).item()
+            correct += (pred.argmax(1) == y).type(torch.float).sum().item()
+    test_loss /= size
+    correct /= size
+    print(f"Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n")
+```
+
+1. 如果神经网络里有Dropouts层或BatchNorm层，这些层的计算方式在训练和测试评估时是不同的，Pytorch的eval\(\)就是显示的告诉模型，现在是训练时刻还是评估时刻。如果开启了eval模式，下次训练时还需要调整回train模式，直接用模型调用train\(\)方法就好了。由于是演示关系，前面在train函数里并没有使用train\(\)方法，读者可以自己添加；
+2. 由于在评估模型时记录反向梯度传播时使用的数据是没有意义的，为了提高计算效率，可以显示地关闭记录梯度的过程。通常，eval\(\)和no\_grad\(\)是成对出现的。
+
 
 
 
