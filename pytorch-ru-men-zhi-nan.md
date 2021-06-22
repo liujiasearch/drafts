@@ -170,11 +170,32 @@ def test(dataloader, model, loss_fn):
 1. 如果神经网络里有Dropouts层或BatchNorm层，这些层的计算方式在训练和测试评估时是不同的，Pytorch的eval\(\)就是显示的告诉模型，现在是训练时刻还是评估时刻。如果开启了eval模式，下次训练时还需要调整回train模式，直接用模型调用train\(\)方法就好了。由于是演示关系，前面在train函数里并没有使用train\(\)方法，读者可以自己添加；
 2. 由于在评估模型时记录反向梯度传播时使用的数据是没有意义的，为了提高计算效率，可以显示地关闭记录梯度的过程。通常，eval\(\)和no\_grad\(\)是成对出现的。
 
+一切准备工作都已经准备就绪，接着就可以开始上述全部内容的调用了。
 
+```text
+epochs = 5    #1
+for t in range(epochs):
+    print(f"Epoch {t+1}\n-------------------------------")
+    train(train_dataloader, model, loss_fn, optimizer)    #2
+    test(test_dataloader, model, loss_fn)    #3
+print("Done!")
+```
 
+1. 将数据集反复使用5次；
+2. 先进行模型的训练；
+3. 对模型进行评估。
 
+当模型训练到一个令人满意的程度后，我们就可以把模型保存下来了，当然有保存就有装载，Pytorch有非常方便的工具提供了这两个功能。
 
+```text
+torch.save(model.state_dict(), "model.pth")    #1
+model = NeuralNetwork()    #2
+model.load_state_dict(torch.load("model.pth"))    #3
+```
 
+1. save\(\)方法可以方便的保存模型参数；
+2. 这里save\(\)方法使用了state\_dict\(\)参数，因此只保存神经网络的参数，而不包括模型的结构本身，如果要装载参数的话，需要先实例化网络，不同的网络结构的参数是不能装载其它网络结构的参数的；
+3. load\_state\_dict\(\)把save\(\)方法保存的state\_dict\(\)参数装载回网络，如果连模型也想保存的话，只需要使用`save(model, "model.pth")`即可，恢复完整的模型则采用`model = torch.load("model.pth")`来进行恢复。
 
 如果读者已经熟悉了Keras的用法，会发现Pytorch和Keras在使用上是十分相似的，所以在了解了基本用法后，在工具之间过渡将十分方便。
 
