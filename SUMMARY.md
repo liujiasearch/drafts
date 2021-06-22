@@ -22,4 +22,5 @@
 * [AlphaGo](alphago.md)
 * [AlphaZero](alphazero.md)
 * [结尾](ling-sui-ji-lu.md)
+* [Pytorch入门指南](pytorch-ru-men-zhi-nan.md)
 
