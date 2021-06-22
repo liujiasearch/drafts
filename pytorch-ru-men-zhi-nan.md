@@ -84,10 +84,62 @@ loss_fn = nn.CrossEntropyLoss()    #1
 optimizer = torch.optim.SGD(model.parameters(), lr=1e-3)    #2
 ```
 
-1. 在例子中
+1. 在例子中采用最常见的交叉熵作为损失函数；
+2. 反向梯度算法也不做优化，采用最通用的反向传播算法。
 
+接着就是要准备开始对网络进行训练了。监督训练是最基本的神经网络训练，这里使用Pytorch自带的数据集，实际应用时，读者需要自己实现与样例类似的方法。
 
+```text
+from torch.utils.data import DataLoader    #1
+from torchvision import datasets    #2
 
+training_data = datasets.FashionMNIST(
+    root="data",
+    train=True,    #3
+    download=True,    #4
+    transform=ToTensor()    
+)
+
+test_data = datasets.FashionMNIST(
+    root="data",
+    train=False,    #3
+    download=True,    #4
+    transform=ToTensor()    
+)
+
+batch_size = 64    #5
+train_dataloader = DataLoader(training_data, batch_size=batch_size)    #6
+test_dataloader = DataLoader(test_data, batch_size=batch_size)    #6
+```
+
+1. 引入数据装载工具，它的作用就是自动的装载训练用到的输入数据与样例标签；
+2. Pytorch也自带了丰富的数据集，这里我们使用记录了手写数字的MNIST数据集；
+3. datasets通过train参数来控制输出是训练集还是测试集；
+4. datasets由于太大，并没有跟随库一起安装，一般都是使用到的时候才会下载；
+5. 神经网络的训练基于大数据，实际应用场景中很难一次性装载全部数据，基本上全部都是采用批量训练的模式，batch\_size设置了一批次的数据规模。
+6. 初始化训练神经网络时的数据装载器。
+
+训练的方法基本上是模式固定的，如果没有特殊需求，基本上都可以套用下面这个训练函数写法。
+
+```text
+def train(dataloader, model, loss_fn, optimizer):
+    size = len(dataloader.dataset)    #1
+    for batch, (X, y) in enumerate(dataloader):    #2
+        X, y = X.to(device), y.to(device)    #3
+
+        pred = model(X)    #4
+        loss = loss_fn(pred, y)    #5
+
+        optimizer.zero_grad()    #6
+        loss.backward()    #7
+        optimizer.step()    #8
+
+        if batch % 100 == 0:    #9
+            loss, current = loss.item(), batch * len(X)
+            print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
+```
+
+1. 
 
 
 
