@@ -197,5 +197,20 @@ model.load_state_dict(torch.load("model.pth"))    #3
 2. 这里save\(\)方法使用了state\_dict\(\)参数，因此只保存神经网络的参数，而不包括模型的结构本身，如果要装载参数的话，需要先实例化网络，不同的网络结构的参数是不能装载其它网络结构的参数的；
 3. load\_state\_dict\(\)把save\(\)方法保存的state\_dict\(\)参数装载回网络，如果连模型也想保存的话，只需要使用`save(model, "model.pth")`即可，恢复完整的模型则采用`model = torch.load("model.pth")`来进行恢复。
 
-如果读者已经熟悉了Keras的用法，会发现Pytorch和Keras在使用上是十分相似的，所以在了解了基本用法后，在工具之间过渡将十分方便。
+Pytorch使用自己格式的张量结构，就和TensorFlow也有自己的张量结构一样。下面演示了如果产生一个Pytorch的张量。
+
+```text
+data = [[1, 2],[3, 4]]
+x_data = torch.tensor(data)
+```
+
+很多时候直接使用Pytorch或者TensorFlow的张量在计算时并不如使用numpy方便，所以Pytorch也提供了numpy的转换函数。下面演示了如何将numpy结构转换成Pytorch张量，再从Pytorch张量转回numpy结构的方法。
+
+```text
+np_array = np.array(data)
+x_np = torch.from_numpy(np_array)
+np_array = x_np.numpy()
+```
+
+如果读者已经熟悉了Keras的用法，会发现Pytorch和Keras在使用上是十分相似的，在了解了基本用法后，二者之间的相互过渡将十分方便。
 
