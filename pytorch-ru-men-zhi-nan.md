@@ -1,6 +1,6 @@
 ---
 description: >-
-  读者可以直接登陆官网参考Pytorch的官方入门指南（https://pytorch.org/tutorials/beginner/basics/buildmodel_tutorial.html），本文可以看作是一个精简后的官方指南中文版。
+  读者可以直接登陆官网参考Pytorch的官方入门指南（https://pytorch.org/tutorials/beginner/basics/buildmodel_tutorial.html），本文可以看作是一个精简后的官方指南中文版。和Keras入门指南类似，这里会跳过安装过程，读者可以自行使用Pip或者参考相关安装指南来完成Pytorch的安装工作。
 ---
 
 # Pytorch入门指南
