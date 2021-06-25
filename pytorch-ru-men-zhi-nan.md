@@ -1,6 +1,6 @@
 ---
 description: >-
-  读者可以直接登陆官网参考Pytorch的官方入门指南（https://pytorch.org/tutorials/beginner/basics/buildmodel_tutorial.html），本文可以看作是一个精简后的官方指南中文版。
+  读者可以直接登陆官网参考Pytorch的官方入门指南（https://pytorch.org/tutorials/beginner/basics/buildmodel_tutorial.html），本文可以看作是一个精简后的官方指南中文版。和Keras入门指南类似，这里会跳过安装过程，读者可以自行使用Pip或者参考相关安装指南来完成Pytorch的安装工作。
 ---
 
 # Pytorch入门指南
@@ -139,12 +139,78 @@ def train(dataloader, model, loss_fn, optimizer):
             print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
 ```
 
-1. 
+1. 获取训练集的大小，这个仅在展示信息时使用，不是必须的；
+2. 小批量从dataloader中取数据出来训练；
+3. 把数据塞入device里，需要注意，训练数据的大小不要超过device设备的内存；
+4. 将训练集输入网络做前向计算；
+5. 计算损失函数；
+6. 对于小批量的训练，需要在每一批次训练时将上一批次的梯度清空，否则上一批次的梯度会被继承下来，通常这不会产生严重的影响，但是可能会降低训练学习的效率；
+7. 反向传播计算梯度；
+8. 根据反向梯度的计算结果更新神经网络的参数；
+9. 每100次小批量训练后输出一次训练情况。
 
+训练完成后，需要通过测试集来验证网络的泛化能力，测试方法通常来说比较简单，很多部分和训练过程是类似的。
 
+```text
+def test(dataloader, model, loss_fn):
+    size = len(dataloader.dataset)
+    model.eval()    #1
+    test_loss, correct = 0, 0
+    with torch.no_grad():    #2
+        for X, y in dataloader:
+            X, y = X.to(device), y.to(device)
+            pred = model(X)
+            test_loss += loss_fn(pred, y).item()
+            correct += (pred.argmax(1) == y).type(torch.float).sum().item()
+    test_loss /= size
+    correct /= size
+    print(f"Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n")
+```
 
+1. 如果神经网络里有Dropouts层或BatchNorm层，这些层的计算方式在训练和测试评估时是不同的，Pytorch的eval\(\)就是显示的告诉模型，现在是训练时刻还是评估时刻。如果开启了eval模式，下次训练时还需要调整回train模式，直接用模型调用train\(\)方法就好了。由于是演示关系，前面在train函数里并没有使用train\(\)方法，读者可以自己添加；
+2. 由于在评估模型时记录反向梯度传播时使用的数据是没有意义的，为了提高计算效率，可以显示地关闭记录梯度的过程。通常，eval\(\)和no\_grad\(\)是成对出现的。
 
+一切准备工作都已经准备就绪，接着就可以开始上述全部内容的调用了。
 
+```text
+epochs = 5    #1
+for t in range(epochs):
+    print(f"Epoch {t+1}\n-------------------------------")
+    train(train_dataloader, model, loss_fn, optimizer)    #2
+    test(test_dataloader, model, loss_fn)    #3
+print("Done!")
+```
 
-如果读者已经熟悉了Keras的用法，会发现Pytorch和Keras在使用上是十分相似的，所以在了解了基本用法后，在工具之间过渡将十分方便。
+1. 将数据集反复使用5次；
+2. 先进行模型的训练；
+3. 对模型进行评估。
+
+当模型训练到一个令人满意的程度后，我们就可以把模型保存下来了，当然有保存就有装载，Pytorch有非常方便的工具提供了这两个功能。
+
+```text
+torch.save(model.state_dict(), "model.pth")    #1
+model = NeuralNetwork()    #2
+model.load_state_dict(torch.load("model.pth"))    #3
+```
+
+1. save\(\)方法可以方便的保存模型参数；
+2. 这里save\(\)方法使用了state\_dict\(\)参数，因此只保存神经网络的参数，而不包括模型的结构本身，如果要装载参数的话，需要先实例化网络，不同的网络结构的参数是不能装载其它网络结构的参数的；
+3. load\_state\_dict\(\)把save\(\)方法保存的state\_dict\(\)参数装载回网络，如果连模型也想保存的话，只需要使用`save(model, "model.pth")`即可，恢复完整的模型则采用`model = torch.load("model.pth")`来进行恢复。
+
+Pytorch使用自己格式的张量结构，就和TensorFlow也有自己的张量结构一样。下面演示了如果产生一个Pytorch的张量。
+
+```text
+data = [[1, 2],[3, 4]]
+x_data = torch.tensor(data)
+```
+
+很多时候直接使用Pytorch或者TensorFlow的张量在计算时并不如使用numpy方便，所以Pytorch也提供了numpy的转换函数。下面演示了如何将numpy结构转换成Pytorch张量，再从Pytorch张量转回numpy结构的方法。
+
+```text
+np_array = np.array(data)
+x_np = torch.from_numpy(np_array)
+np_array = x_np.numpy()
+```
+
+如果读者已经熟悉了Keras的用法，会发现Pytorch和Keras在使用上是十分相似的，在了解了基本用法后，二者之间的相互过渡将十分方便。
 
