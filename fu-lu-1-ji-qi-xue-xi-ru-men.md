@@ -97,8 +97,86 @@ $$
 
 ![](.gitbook/assets/sin.svg)
 
+我们用多层感知机来模拟这个系统，下面是Keras代码来搭建这个系统，如果读者对Keras不熟悉，可以先阅读一下附录中关于Keras的入门指南。
+
+由于手头没有现成的数据，我们首先要手工生成训练集和测试集。
+
+```python
+import numpy as np
+import tensorflow as tf
+from tensorflow import keras
+
+np.random.seed(0)    #1
+tf.random.set_seed(0)    #
+
+samples=5000    #2
+train_x=np.random.rand(samples,2)    #3
+bases=np.sin(train_x[:,0])    #4
+train_y=train_x[:,1]>bases    #5
+train_y=np.ones((samples,))*train_y    #5
+
+test_samples=20    #6
+test_x=np.random.rand(test_samples,2)    #6
+test_bases=np.sin(test_x[:,0])    #6
+test_y=test_x[:,1]>test_bases    #6
+test_y=np.ones((test_samples,))*test_y    #6
+
+def model():
+    inp=keras.layers.Input(shape=2)
+    x=keras.layers.Dense(64,activation='relu')(inp)
+    x=keras.layers.Dense(128,activation='relu')(x)
+    x=keras.layers.Dense(8,activation='relu')(x)
+    outp=keras.layers.Dense(1,activation='sigmoid')(x)
+    return keras.models.Model(inputs=inp, outputs=outp)
+model=model()
+model.compile(optimizer=keras.optimizers.SGD(learning_rate=1e-1),
+              loss=keras.losses.BinaryCrossentropy(from_logits=True),
+              metrics = ['accuracy'])
+model.fit(train_x, train_y, epochs=500, batch_size=128)
+
+loss, acc = model.evaluate(test_x,test_y)
+print("loss: %.2f" % loss)
+print("acc: %.2f" % acc)
+```
 
 
+
+1. 为了方便读者重现，固定住Numpy和Keras的随机数生成结果；
+2. samples表示训练集中包含的数据量大小；
+3. 在\[0,1\)的取值范围内，随机在坐标平面上产生5000个点的训练样本，格式为（x, y\)；
+4. 计算sin\(x\)的值；
+5. 将5000个样本的y值与sin\(x\)的值做比较，大于的设置为1，小于的设置为0，并产生训练集的样本标签；
+6. 重复上面1~4步，生成测试集，用于验证神经网络的泛化效果。
+
+在准备工作做完后，接着需要构建一个简单的全连接网络。
+
+```python
+def model():
+    inp=keras.layers.Input(shape=2)    #1
+    x=keras.layers.Dense(64,activation='relu')(inp)    #2
+    x=keras.layers.Dense(128,activation='relu')(x)    #2
+    x=keras.layers.Dense(8,activation='relu')(x)    #2
+    outp=keras.layers.Dense(1,activation='sigmoid')(x)    #3
+    return keras.models.Model(inputs=inp, outputs=outp)
+model=model()
+```
+
+1. 网络有两个输入节点，分别对应坐标图上的x坐标和y坐标；
+2. 隐藏层由3层组成，分别是由64、128和8个神经元组成，所有神经元都使用Relu激活函数；
+3. 输出层就一个节点，由于我们需要网络对输入的y值进行大于还是小于sin\(x\)的逻辑判断，因此采用sigmoid这个适用于逻辑回归的激活函数，将输出范围限定语\(0, 1\)之间。
+
+```python
+model.compile(optimizer=keras.optimizers.SGD(learning_rate=1e-1),
+              loss=keras.losses.BinaryCrossentropy(from_logits=True),
+              metrics = ['accuracy'])              #1
+model.fit(train_x, train_y, epochs=500, batch_size=128)              #2
+
+loss, acc = model.evaluate(test_x,test_y)              #3
+print("loss: %.2f" % loss)
+print("acc: %.2f" % acc)
+```
+
+1. 
 误差产生的位置都集中在分割线附近，这是因为毕竟神经网络的数学表达式不是正玄函数，网络只能根据输入的数据去判断最佳的分割线，这条线并不是正玄的，只能是网络根据输入数据去尽力拟合，泛化误差其实就是拟合误差。
 
 需要注意，我们训练出的神经网络只能处理取值范围在坐标\[0,0\]到\[1,1\]所围成的矩形区域内，当输入超出这个范围，网络的预测结果就会很差。这是因为训练的数据和预测的数据必须来自于相同的数据分布，用一个通俗的类比来说，就是一个对宠物猫品种熟悉的专家，当把一直豹子给他分类，那么这个专家也是不可能成功的，人们无法将某个领域的专业知识迁移到另一个不同的领域，这一点对于机器学习来说也是一样的。
