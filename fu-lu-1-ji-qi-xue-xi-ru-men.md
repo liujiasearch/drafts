@@ -97,7 +97,63 @@ $$
 
 手工计算神经网络的反向传播是没有意义的，由于具有实际应用价值的神经网络规模是如此庞大，以至于脱离了强大的计算机计算能力，这项技术就失去了实用的能力，这也是为什么直到最近人工神经网络才开始大规模普及的原因。
 
+反向传播的核心算法是梯度下降算法，这个算法也被称作最陡下降法。其思想就是通过计算自变量的偏导数，并将自变量往因变量减小的方向移动，从而找到因变量的最小值。
+
+![&#x68AF;&#x5EA6;&#x4E0B;&#x964D;&#x603B;&#x662F;&#x6CBF;&#x56E0;&#x53D8;&#x91CF;&#x51CF;&#x5C0F;&#x7684;&#x65B9;&#x5411;&#x79FB;&#x52A8;&#x81EA;&#x53D8;&#x91CF;](.gitbook/assets/gd.svg)
+
+
+
+
+
+![&#x5408;&#x9002;&#x7684;&#x6B65;&#x8FDB;](.gitbook/assets/normgd.svg)
+
+![&#x8FC7;&#x5927;&#x7684;&#x6B65;&#x8FDB;&#x5BFC;&#x81F4;&#x7CFB;&#x7EDF;&#x53D1;&#x6563;](.gitbook/assets/overgd.svg)
+
+
+
+
+
+
+
+![&#x68AF;&#x5EA6;&#x4E0B;&#x964D;&#x7B97;&#x6CD5;&#x5BB9;&#x6613;&#x9677;&#x5165;&#x5C40;&#x90E8;&#x6700;&#x5C0F;](.gitbook/assets/gdprob.svg)
+
+
+
+
+
 我用excel来演示一下使用梯度下降算法来做线性回归，这种方法本质上和神经网络反向传播用到算法是一样的，只是神经网络由于参与的节点太多，手工计算很容易出错。另外在更新神经网络的参数时是从输出节点向输入的节点的逐级更新，反向传播也由此得名。
+
+
+
+
+
+```python
+import numpy as np
+np.random.seed(4) 
+
+a=round(np.random.random(),2)
+b=round(np.random.random(),2)
+
+x=np.arange(-1,1,0.1) #(20,) 
+y=a*x+b+np.random.random(size=(20,))/10
+
+a_hat=np.random.random()
+b_hat=np.random.random()
+
+iter=200
+lr=0.1
+for i in range(iter):
+    y_hat=a_hat*x+b_hat
+    Loss=np.sum((y_hat-y)*(y_hat-y))/(2*x.shape[0])
+    if i%10==0:
+        print('Loss=%f' % Loss)
+    pd_a=np.sum((y_hat-y)*x)/x.shape[0]
+    pd_b=np.sum(y_hat-y)/x.shape[0]
+    a_hat=a_hat-lr*pd_a
+    b_hat=b_hat-lr*pd_b
+    
+print('a=%.2f,b=%.2f,a_hat=%.2f,b_hat=%.2f' %(a,b,a_hat,b_hat))
+```
 
 ### 多层感知器的应用示例
 
