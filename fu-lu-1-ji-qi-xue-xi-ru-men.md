@@ -115,10 +115,10 @@ $$
 L(\hat{y}, y)=||f(X,\omega)-p(y|X)||
 $$
 
-均方差损失函数常被用来处理逻辑回归问题，设回归模型对输出 $$y$$ 的估计是 $$h_\theta(x_i)$$，则均方差损失函数用数学公式来表达就是：
+均方差损失函数常被用来处理逻辑回归问题，设回归模型对输出 $$y$$ 的估计是 $$h_\theta(x_i)$$，数据量为N，则均方差损失函数用数学公式来表达就是：
 
 $$
-J=\frac{1 }{N }\sum_{n=1}^N{(y_i-h_\theta(x_i))^2}
+J=\frac{1 }{2N }\sum_{n=1}^N{(y_i-h_\theta(x_i))^2}
 $$
 
 对数损失函数也称对数似然损失，是在概率估计上定义的.它常用于逻辑回归和神经网络，以及一些期望极大算法的变体。逻辑回归的输出范围在0到1之间，我们用 $$log Pi$$表示回归模型对输出的估计 ，写成数学表达式为：
@@ -138,45 +138,60 @@ $$
 1. 随机初始化系统 $$f$$ 的参数 $$\theta_i$$ ；
 2. 根据实际应用场景选择一个合适的损失函数 $$L(\hat{y}, y)$$ ；
 3. 根据经验选择一个学习率 $$lr$$ ；
-4. 选择一个合理的迭代次数 $$n$$ ；
-5. 开始迭代，反复执行下列步骤 $$n$$ 次；
-6. 使用参数 $$\theta_i$$ 计算系统 $$f$$ 对输入 $$X$$ 的输出估计 $$\hat{y}$$ ;
-7. 计算损失函数的值 $$L(\hat{y}, y)$$，这一步不是必须的，但是通过在迭代过程中观察这个值，可以知道模型在当前学习率下是收敛的还是发散的；
-8. 逐一计算 $$\theta_i$$ 的梯度 $$\frac{\partial L}{\partial \theta_i}$$ ;
-9. 逐一计算步进 $$lr*\frac{\partial L}{\partial \theta_i}$$ ;
-10. 逐一调整参数 $$\theta_i=\theta_i-lr*\frac{\partial L}{\partial \theta_i}$$；
+4. 选择一个合理的迭代次数 $$n$$ 并反复执行下列步骤 $$n$$ 次；
+5. 使用参数 $$\theta_i$$ 计算系统 $$f$$ 对输入 $$X$$ 的输出估计 $$\hat{y}$$ ;
+6. 计算损失函数的值 $$L(\hat{y}, y)$$，这一步不是必须的，但是通过在迭代过程中观察这个值，可以知道模型在当前学习率下是收敛的还是发散的；
+7. 逐一计算 $$\theta_i$$ 的梯度 $$\frac{\partial L}{\partial \theta_i}$$ ;
+8. 逐一计算步进 $$lr*\frac{\partial L}{\partial \theta_i}$$ ;
+9. 逐一调整参数 $$\theta_i=\theta_i-lr*\frac{\partial L}{\partial \theta_i}$$；
 
-我用excel来演示一下使用梯度下降算法来做线性回归，这种方法本质上和神经网络反向传播用到算法是一样的，只是神经网络由于参与的节点太多，手工计算很容易出错。另外在更新神经网络的参数时是从输出节点向输入的节点的逐级更新，反向传播也由此得名。
+我们用一个实例来具体演示一下如何根据上面的梯度下降算法步骤来做做一阶线性回归。首先，我们利用公式 $$y=0.97x+0.55+\mu_n$$ 生成一系列用于一阶线性回归的数据 $$(X,y)$$ ，其中 $$\mu_n$$ 表示一个很小的随机噪声。接着尝试用模型 $$\hat{y}=\hat{a}*x+\hat{b}$$ 来拟合这些数据。根据前面的步骤以及说明，我们选择均方差损失函数来解这个模型。下面的代码演示了使用Python来求得模型参数a和b的估计。
 
 ```python
 import numpy as np
-np.random.seed(4) 
+np.random.seed(4)    #1
 
-a=round(np.random.random(),2)
-b=round(np.random.random(),2)
+x=np.arange(-1,1,0.1)    #2
+y=0.97*x+0.55+np.random.random(size=(20,))/10    #2
 
-x=np.arange(-1,1,0.1) #(20,) 
-y=a*x+b+np.random.random(size=(20,))/10
+a_hat=np.random.random()    #3
+b_hat=np.random.random()    #3
+lr=0.1    #3
 
-a_hat=np.random.random()
-b_hat=np.random.random()
+iter=200    #4
+for i in range(iter):    #4
+    y_hat=a_hat*x+b_hat    #5
+    Loss=np.sum((y_hat-y)*(y_hat-y))/(2*x.shape[0])    #6
+    if i%10==0:    #6
+        print('Loss=%f' % Loss)    #6
+    pd_a=np.sum((y_hat-y)*x)/x.shape[0]    #7
+    pd_b=np.sum(y_hat-y)/x.shape[0]    #7
+    a_hat=a_hat-lr*pd_a    #8
+    b_hat=b_hat-lr*pd_b    #8
+```
 
-iter=200
-lr=0.1
-for i in range(iter):
-    y_hat=a_hat*x+b_hat
-    Loss=np.sum((y_hat-y)*(y_hat-y))/(2*x.shape[0])
-    if i%10==0:
-        print('Loss=%f' % Loss)    #评估是否向最小值前进
-    pd_a=np.sum((y_hat-y)*x)/x.shape[0]
-    pd_b=np.sum(y_hat-y)/x.shape[0]
-    a_hat=a_hat-lr*pd_a
-    b_hat=b_hat-lr*pd_b
-    
+1. 固定住numpy的随机数种子，使得结果可复现。学会使用numpy是利用Python处理数据的一个好习惯；
+2. 从原函数中等距抽样20个样本用于数据拟合。这里为了防止引入的随机变量对原函数系统的数据影响过大，将随机数降低了一个数量级；
+3. 使用随机数初始化待估计参数 $$\hat{a}$$ 和 $$\hat{b}$$ 并选择学习率为0.1。根据经验来看，建议初始学习率设置在0.001~0.1之间，而后根据情况适当调整；
+4. 设置程序迭代200次；
+5. 计算模型的输出估计，这一步主要是为了方便后面计算参数的梯度；
+6. 计算损失函数，并且每迭代10次输出一次损失函数的值，通过观察这个值的变化，我们来判断梯度下降算法有没有发散，如果发散了，需要适当调整学习率 $$lr$$；
+7. 计算损失函数对估计参数的偏导数。根据均方误差的公式，将回归模型 $$\hat{y}=\hat{a}*x+\hat{b}$$ 代入，可以得到 $$\frac{\partial L}{\partial \hat{a}}=\frac{1}{20}\Sigma(\hat{y_i}-y_i)x_i$$ 和 $$\frac{\partial L}{\partial \hat{a}}=\frac{1}{20}\Sigma(\hat{y_i}-y_i)$$；
+8. 计算参数 $$\hat{a}$$ 和 $$\hat{b}$$ 的步进，并更新参数。
+
+执行代码可以发现，大约迭代180次后，损失函数的值就基本上固定在0.000604上了。
+
+> Loss=0.144828 Loss=0.032735 Loss=0.011993 Loss=0.005808 Loss=0.003185 Loss=0.001911 Loss=0.001269 Loss=0.000943 Loss=0.000777 Loss=0.000692 Loss=0.000649 Loss=0.000627 Loss=0.000616 Loss=0.000610 Loss=0.000607 Loss=0.000606 Loss=0.000605 Loss=0.000604 Loss=0.000604 Loss=0.000604
+
+将 $$a,b,\hat{a},\hat{b}$$ 打印出来可以发现，整个拟合过程是相当成功的，这里估计值和真实值之间的差距是由于我们引入了噪声所导致的，读者如果去掉原函数中的噪声，那么将会得到近乎完美的估计结果。
+
+```python
 print('a=%.2f,b=%.2f,a_hat=%.2f,b_hat=%.2f' %(a,b,a_hat,b_hat))
 ```
 
+> a=0.97,b=0.55,a\_hat=0.96,b\_hat=0.60
 
+这种方法本质上和神经网络反向传播用到算法是一样的，只是神经网络由于参与的节点太多，手工计算很容易出错。另外在更新神经网络的参数时是从输出节点向输入的节点的逐级更新，反向传播也由此得名。我通过列一张表来对比一下，线性回归和神经网络反向传播的异同点。
 
 ### 多层感知器的应用示例
 
