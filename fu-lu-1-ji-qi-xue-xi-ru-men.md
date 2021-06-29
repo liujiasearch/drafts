@@ -191,6 +191,31 @@ print('a=%.2f,b=%.2f,a_hat=%.2f,b_hat=%.2f' %(a,b,a_hat,b_hat))
 
 > a=0.97,b=0.55,a\_hat=0.96,b\_hat=0.60
 
+
+
+```python
+import matplotlib.pyplot as plt
+plt.rcParams['font.sans-serif']=['SimHei']
+plt.rcParams['axes.unicode_minus']=False
+plt.figure(figsize=(10,10))
+font = {
+'size'   : 20,
+}
+
+y_hat=a_hat*x+b_hat
+l1=plt.plot(x,y,'r-',label='拟合线')
+l2=plt.plot(x,y_hat,'g-',label='原数据')
+plt.plot(x,y,'ro-',x,y_hat,'g+-')
+plt.title('梯度下降法计算线性回归',font)
+
+plt.xlabel('x',font)
+plt.ylabel('y',font)
+plt.legend()
+plt.show()
+```
+
+![](.gitbook/assets/1.png)
+
 这种方法本质上和神经网络反向传播用到算法是一样的，只是神经网络由于参与的节点太多，手工计算很容易出错。另外在更新神经网络的参数时是从输出节点向输入的节点的逐级更新，反向传播也由此得名。我通过列一张表来对比一下，线性回归和神经网络反向传播的异同点。
 
 ### 多层感知器的应用示例
