@@ -191,7 +191,7 @@ print('a=%.2f,b=%.2f,a_hat=%.2f,b_hat=%.2f' %(a,b,a_hat,b_hat))
 
 > a=0.97,b=0.55,a\_hat=0.96,b\_hat=0.60
 
-
+为了能够有直观的感受，我们可以使用下面的代码来观察一下实际效果。
 
 ```python
 import matplotlib.pyplot as plt
@@ -201,24 +201,81 @@ plt.figure(figsize=(10,10))
 font = {
 'size'   : 20,
 }
-
 y_hat=a_hat*x+b_hat
-l1=plt.plot(x,y,'r-',label='拟合线')
-l2=plt.plot(x,y_hat,'g-',label='原数据')
-plt.plot(x,y,'ro-',x,y_hat,'g+-')
+y_o=a*x+b
+l1=plt.plot(x,y,'r-',label='含噪数据')
+l2=plt.plot(x,y_hat,'g-',label='拟合数据')
+l3=plt.plot(x,y_o,'y-',label='去噪数据')
+plt.plot(x,y,'ro-',x,y_hat,'g+-',x,y_o,'y^-')
 plt.title('梯度下降法计算线性回归',font)
-
 plt.xlabel('x',font)
 plt.ylabel('y',font)
 plt.legend()
 plt.show()
 ```
 
+可以发现，通过梯度下降算法计算得到的直线可以比不含噪声的原函数更好的预测含有噪声的数据。
+
 ![](.gitbook/assets/1.png)
 
-绿色的直线。。。
+神经网络反向传播和上面提到的梯度下降算法本质上是一样的。只是神经网络由于参与的节点太多，手工计算很容易出错，我们必须借助于计算机工程软件才能将其应用到实践中。另外由于神经网络是由多个神经元拼接组成的，计算各个参数的梯度时得从输出层开始向输入层的方向逐级更新，这个顺序与计算系统的输出相反，反向传播也由此得名。
 
-这种方法本质上和神经网络反向传播用到算法是一样的，只是神经网络由于参与的节点太多，手工计算很容易出错。另外在更新神经网络的参数时是从输出节点向输入的节点的逐级更新，反向传播也由此得名。我通过列一张表来对比一下，线性回归和神经网络反向传播的异同点。
+神经网络理论上可以拟合任意函数，我们试着用神经网络来试着计算 $$\hat{a}$$ 和 $$\hat{b}$$ 的值。通过比较就会发现使用神经网络的方法和使用传统的手工计算梯度的方法没有什么差别。由于这个问题比较简单，我们只用含有一个神经元的神经网络，并且不使用激活函数。根据神经元的定义，神经元的输入端突触权重和偏置权重就正好是需要计算的 $$\hat{a}$$ 和 $$\hat{b}$$ 值。
+
+![&#x5355;&#x4E2A;&#x795E;&#x7ECF;&#x5143;&#x7EC4;&#x6210;&#x7684;&#x795E;&#x7ECF;&#x7F51;&#x7EDC;](.gitbook/assets/sin%20%281%29.svg)
+
+```python
+import numpy as np    #1
+np.random.seed(4)     #1
+a=round(np.random.random(),2)    #1
+b=round(np.random.random(),2)    #1 
+x=np.arange(-1,1,0.1)    #1
+y=a*x+b+np.random.random(size=(20,))/10    #1
+
+import tensorflow as tf    #2
+from tensorflow import keras    #2
+tf.random.set_seed(0)    #3
+def model():    #4
+    inp=keras.layers.Input(shape=1)
+    outp=keras.layers.Dense(1,name='Dense_1')(inp)
+    return keras.models.Model(inputs=inp, outputs=outp)
+model=model()    #4
+model.compile(optimizer=keras.optimizers.SGD(learning_rate=1e-1),    #5
+              loss=keras.losses.MeanSquaredError())    #6
+model.fit(x, y, epochs=200)    #7
+
+a_hat,b_hat=model.get_layer('Dense_1').get_weights()    #8
+print("a_hat=%.2f,b_hat=%.2f" %(a_hat[0][0],b_hat[0]))    #8
+```
+
+1. 生成用来回归的带噪数据；
+2. 调用TensorFlow及其子库Keras；
+3. 固定住TensorFlow的随机种子，使得结果可重现；
+4. 定义单个神经元的神经网络结构；
+5. 设置网络利用梯度下降法对网络的参数进行求导，并将学习率设置为0.1；
+6. 将均方差函数作为估计与样本标签之间误差评估的损失函数；
+7. 将样本和样本标签扔进软件的fit方法中，让软件按照反向传播的算法自动迭代并更新参数200次；
+8. 神经元的输入端突触和偏置的权重就是需要估计的参数 $$\hat{a}$$ 和 $$\hat{b} $$ 。
+
+> Epoch 73/200 20/20 \[==============================\] - 0s 150us/sample - loss: 0.0013 
+>
+> Epoch 74/200 20/20 \[==============================\] - 0s 100us/sample - loss: 0.0013 
+>
+> Epoch 75/200 20/20 \[==============================\] - 0s 100us/sample - loss: 0.0012 
+>
+> Epoch 76/200 20/20 \[==============================\] - 0s 100us/sample - loss: 0.0012 
+>
+> Epoch 77/200 20/20 \[==============================\] - 0s 150us/sample - loss: 0.0012 
+>
+> Epoch 78/200 20/20 \[==============================\] - 0s 300us/sample - loss: 0.0012
+
+> a\_hat=0.96,b\_hat=0.60
+
+可见利用神经网络得到的估计值和利用传统算法得到的估计值是一模一样的。由于我们手工定义的均方误差比软件中定义的均方误差多乘了二分之一，所以这里展示的损失函数值是0.0012，将其除以2就是我们之前的0.0006。之所以手工定义时多乘了二分之一，是为了在求导数时省去系数的计算，这种略带技巧性的处理并不会影响最终结果。
+
+|  |  |  |
+| :--- | :--- | :--- |
+|  |  |  |
 
 ### 多层感知器的应用示例
 
@@ -236,7 +293,7 @@ import tensorflow as tf
 from tensorflow import keras
 
 np.random.seed(0)    #1
-tf.random.set_seed(0)    #
+tf.random.set_seed(0)    #1
 
 samples=5000    #2
 train_x=np.random.rand(samples,2)    #3
@@ -249,26 +306,7 @@ test_x=np.random.rand(test_samples,2)    #6
 test_bases=np.sin(test_x[:,0])    #6
 test_y=test_x[:,1]>test_bases    #6
 test_y=np.ones((test_samples,))*test_y    #6
-
-def model():
-    inp=keras.layers.Input(shape=2)
-    x=keras.layers.Dense(64,activation='relu')(inp)
-    x=keras.layers.Dense(128,activation='relu')(x)
-    x=keras.layers.Dense(8,activation='relu')(x)
-    outp=keras.layers.Dense(1,activation='sigmoid')(x)
-    return keras.models.Model(inputs=inp, outputs=outp)
-model=model()
-model.compile(optimizer=keras.optimizers.SGD(learning_rate=1e-1),
-              loss=keras.losses.BinaryCrossentropy(from_logits=True),
-              metrics = ['accuracy'])
-model.fit(train_x, train_y, epochs=500, batch_size=128)
-
-loss, acc = model.evaluate(test_x,test_y)
-print("loss: %.2f" % loss)
-print("acc: %.2f" % acc)
 ```
-
-
 
 1. 为了方便读者重现，固定住Numpy和Keras的随机数生成结果；
 2. samples表示训练集中包含的数据量大小；
