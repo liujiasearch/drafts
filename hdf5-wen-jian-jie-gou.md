@@ -2,6 +2,21 @@
 
 ![](.gitbook/assets/wei-ming-ming-hui-tu-37%20%281%29.svg)
 
+我们以上图6\*6的棋盘为例。棋盘可以用一个二维的6\*6的矩阵表示，空棋盘用数字0表示，黑棋棋子用1表示，白棋棋子用-1来表示。上图的输入棋盘可以表示为矩阵：
+
+$$
+\left[
+ \begin{matrix}
+0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & -1 & 0 \\
+0 & 0 & 1 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 1 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0
+  \end{matrix}
+  \right]
+$$
+
 ![](.gitbook/assets/jian-dan-shen-jing-wang-luo-jia-gou-.svg)
 
 ![](.gitbook/assets/cnn.svg)
