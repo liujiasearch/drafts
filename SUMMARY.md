@@ -8,6 +8,7 @@
 * [第五章 用机器学习的方法来做围棋智能体](di-wu-zhang-yong-ji-qi-xue-xi-de-fang-fa-lai-zuo-wei-qi-zhi-neng-ti.md)
 * [第六章 通用化我们的围棋AI程序](tong-yong-hua-wo-men-de-wei-qi-ai-cheng-xu.md)
 * [第七章 策略梯度](ce-lve-ti-du.md)
+* [第八章 DQN](di-ba-zhang-dqn.md)
 * [第九章 Actor-Critic算法](ac.md)
 * [第十章 AlphaGo](alphago.md)
 * [第十一章 AlphaZero](alphazero.md)
