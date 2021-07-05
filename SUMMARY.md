@@ -21,7 +21,6 @@
 * [附录5：不同地区的围棋规则](fu-lu-5-bu-tong-de-wei-qi-gui-ze.md)
 * [HDF5文件结构](hdf5-wen-jian-jie-gou.md)
 * [围棋棋谱](wei-qi-qi-pu.md)
-* [关于合并hdf5文件](guan-yu-he-bing-hdf5-wen-jian.md)
 * [结尾](ling-sui-ji-lu.md)
 * [Pytorch入门指南](pytorch-ru-men-zhi-nan.md)
 
