@@ -14,7 +14,7 @@ description: >-
 | **适用场景** | 个人开发或者科研 | 企业 |
 | **可视化** | Visdom | Tensorboard |
 
-本书的编程部分是倾向于偏袒编程初学者的，因此几乎所有的程序都是以windows平台为基础，如果读者是资深的程序员，将代码从windows迁移至其它平台应该不会存在困难。Pytorch的windows版本仅支持Python 3.x，读者在使用Pytorch前需要确定自己使用的是Python 3.x，很多情况是运行的服务器上同时安装了Python 3.x和Python 2.x。 
+本书的编程部分是倾向于偏袒编程初学者的，因此几乎所有的程序都是以windows平台为基础，如果读者是资深的程序员，将代码从windows迁移至其它平台应该不会存在困难。Pytorch的windows版本仅支持Python 3.x，读者在使用Pytorch前需要确定自己使用的是Python 3.x，很多情况是运行的服务器上同时安装了Python 3.x和Python 2.x。
 
 在开始介绍Pytorch使用方法前，读者需要知道GPU+CUDA的组合是目前为机器学习加速计算的最常见组合。如果你的计算平台装有一块显卡，并且支持Nvidia的CUDA，就可以在代码里加上下面这句话，使得神经网络在训练时能够利用CUDA特性使得训练速度有显著的提升。
 
@@ -23,7 +23,7 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print('Using {} device'.format(device))
 ```
 
-我们以一个3层神经网络网络为例，输入层是6个神经元（输入层∈$$R^6$$），隐藏层是8个神经元（隐藏层∈$$R^8$$），输出层是5个神经元（输出层∈$$R^5$$）。每个神经元采用Relu激活函数。
+我们以一个3层神经网络网络为例，输入层是6个神经元（输入层∈$$R^6$$），隐藏层是8个神经元（隐藏层∈$$R^8$$），输出层是5个神经元（输出层∈$$R^5$$）。每个神经元采用Relu激活函数。
 
 ![&#x7F16;&#x7A0B;&#x793A;&#x4F8B;](.gitbook/assets/pic1.png)
 
