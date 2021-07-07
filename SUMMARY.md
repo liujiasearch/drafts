@@ -24,5 +24,4 @@
 * [结尾](ling-sui-ji-lu.md)
 * [Pytorch入门指南](pytorch-ru-men-zhi-nan-1.md)
 * [反向传播算法指南](pytorch-ru-men-zhi-nan.md)
-* [反向传播算法指南](fan-xiang-chuan-bo-suan-fa-zhi-nan.md)
 
