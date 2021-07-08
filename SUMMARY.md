@@ -5,7 +5,7 @@
 * [第二章 实现一个围棋软件](untitled-1.md)
 * [第三章 传统的棋类智能](untitled.md)
 * [第四章 机器学习入门](fu-lu-1-ji-qi-xue-xi-ru-men.md)
-* [第五章 用机器学习的方法来做围棋智能体](di-wu-zhang-yong-ji-qi-xue-xi-de-fang-fa-lai-zuo-wei-qi-zhi-neng-ti.md)
+* [第五章 第一个围棋智能体](di-wu-zhang-yong-ji-qi-xue-xi-de-fang-fa-lai-zuo-wei-qi-zhi-neng-ti.md)
 * [第六章 通用化围棋AI程序](tong-yong-hua-wo-men-de-wei-qi-ai-cheng-xu.md)
 * [第七章 策略梯度](ce-lve-ti-du.md)
 * [第八章 DQN](di-ba-zhang-dqn.md)
