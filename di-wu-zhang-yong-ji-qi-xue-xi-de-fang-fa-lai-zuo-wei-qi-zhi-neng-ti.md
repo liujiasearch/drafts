@@ -79,7 +79,7 @@ u-go.net是一个围棋爱好者的网站，我们能从上面免费下载到[K 
 ```python
 filePath="./game_recorders/game_recorders.h5"                #1
 games=HDF5(filePath,mode='r')                #2
-type='cnn'                #3
+type='pd_dense'                #3
 model=DenseModel(dataGenerator=games.yeilds_data,
                 boardSize=9,dataSize=1024*100,model=type)                #4
 ```
@@ -87,6 +87,36 @@ model=DenseModel(dataGenerator=games.yeilds_data,
 
 1. 学习样本的数据存放在HDF5的格式文件中。训练样本可以从历史棋局中获取，也可以通过程序来自动生成，如何通过程序来自动生成棋谱将在通用化围棋AI程序中进行介绍；
 2. 通过games来实现从存储样本的HDF5文件中获取训练样本和对应的标签；
-3. 我们在DenseModel中预定义了网络模型，通过cnn来进行标识调用；
+3. 我们在DenseModel中预定义了网络模型，pd\_dense类型包含了是一个可选的参数用来指定是使用全连接网络还是卷积网络，默认是卷积网络。type也可以直接设定为cnn，从而显示地指出使用卷积网络；
 4. 调用预定义的DenseModel神经模型。使用games中的数据发生器来产生源源不断的训练数据。数据发生器是一项非常好用的技术，特别是对于样本数据量巨大的训练过程，系统由于内存限制，不可能一次性载入全部数据，通过这项继续，训练过程可以逐个按需获取训练样本。附录《Keras入门指南》中有对这项技术的详细介绍。
+
+{% code title="myGO/sample\_loader.py" %}
+```python
+model.model_compile()    #1
+model.model_fit(batch_size=16*2,epochs=10000,earlystop=10,checkpoint=True)    #2
+model.model_save(type+'.h5')    #3
+```
+{% endcode %}
+
+1. 使用DenseModel预定义好的梯度优化算法和误差函数；
+2. 开始训练，这里使用了早停和记录网络参数的功能。由于我们训练回合过多，对训练效果也不清楚，所以使用早停和参数记录避免由于网络设计不合理导致的训练时间浪费；
+3. 训练完成后保存模型。
+
+使用Keras来做传统的神经网络训练十分的方便，代码写作方式也基本固定，我们仅需要在参数选择上进行调整。我们可以使用`myGO/test_fast_play.py`来看一下使用这种训练方法的棋力。
+
+{% code title="myGO/sample\_loader.py" %}
+```python
+from board_fast import * #1
+
+board = Board(size=9)
+bot1=None    #1
+bot2=Robot(ai='SD',boardSize=9,model='pd_dense')    #2
+game=Game(board)
+print(game.run(play_b=bot1,play_w=bot2,isprint=True))    #3
+```
+{% endcode %}
+
+1. 引入board\_fast工具下的所有方法方便后续调用；
+2. bot1设置手工输入，bot2采用我们刚刚训练好的模型。Robot方法默认装载入`myGO/`下的`lj.h5`神经网络权重文件，所以在使用训练结果时要记得手工调整一下训练结果文件的文件名；
+3. 调用起棋局，并打印出胜负结果。
 
