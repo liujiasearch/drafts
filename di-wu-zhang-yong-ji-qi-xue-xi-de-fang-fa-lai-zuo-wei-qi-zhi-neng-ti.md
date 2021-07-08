@@ -2,7 +2,7 @@
 
 传统的基于监督学习的方法得
 
-### 数据模型
+## 数据模型
 
 要用神经网络来学习围棋，首先要将围棋数字话。本书代码中的样例中用数字1代表黑棋，-1代表白棋。棋盘上的空子用0表示。5路棋盘就用一个（5，5）的数组来表示。
 
@@ -26,5 +26,17 @@
 
 本书的代码样例中上述两种方法都有使用，本章采用第一种方式，即通过卷积网络提取棋盘局面的特征，而后将盘面特征再结合当前落子方输入到逻辑判断网络进行最后的落子选择。
 
+## 代码演示
 
+{% code title="myGO/sample\_loader.py" %}
+```python
+filePath="./game_recorders/game_recorders.h5"                #1
+games=HDF5(filePath,mode='r')                #2
+type='cnn'                #3
+model=DenseModel(dataGenerator=games.yeilds_data,
+                boardSize=9,dataSize=1024*100,model=type)                #4
+```
+{% endcode %}
+
+1. 学习样本的
 

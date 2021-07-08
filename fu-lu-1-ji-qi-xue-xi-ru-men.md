@@ -301,25 +301,23 @@ from tensorflow import keras
 np.random.seed(0)    #1
 tf.random.set_seed(0)    #1
 
-samples=5000    #2
-train_x=np.random.rand(samples,2)    #3
-bases=np.sin(train_x[:,0])    #4
-train_y=train_x[:,1]>bases    #5
-train_y=np.ones((samples,))*train_y    #5
-
-test_samples=20000    #6
-test_x=np.random.rand(test_samples,2)    #6
-test_bases=np.sin(test_x[:,0])    #6
-test_y=test_x[:,1]>test_bases    #6
-test_y=np.ones((test_samples,))*test_y    #6
+samples=25000    #2
+x=np.random.rand(samples,2)    #3
+bases=np.sin(x[:,0])    #4
+y=x[:,1]>bases    #5
+y=np.ones((samples,))*y    #5
+x_train=x[:5000,:]    #6
+y_train=y[:5000]    #6
+x_test=x[5000:,:]    #6
+y_test=y[5000:]    #6
 ```
 
 1. 为了方便读者重现，固定住Numpy和Keras的随机数生成结果；
-2. samples表示训练集中包含的数据量大小；
-3. 在\[0,1\)的取值范围内，随机在坐标平面上产生5000个点的训练样本，格式为（x, y\)；
+2. samples表示数据量大小；
+3. 在\[0,1\)的取值范围内，随机在坐标平面上产生训练样本，格式为（x, y\)；
 4. 计算sin\(x\)的值；
-5. 将5000个样本的y值与sin\(x\)的值做比较，大于的设置为1，小于的设置为0，并产生训练集的样本标签；
-6. 重复上面1~4步，生成测试集，用于验证神经网络的泛化效果。
+5. 将样本的y值与sin\(x\)的值做比较，大于的设置为1，小于的设置为0，并产生样本标签；
+6. 从数据集中分别取出5000个数据作为训练集，剩下的数据作为测试集。
 
 在准备工作做完后，接着需要构建一个简单的全连接网络。
 
