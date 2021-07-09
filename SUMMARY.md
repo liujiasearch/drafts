@@ -19,7 +19,6 @@
 * [Windows安装TensorFlow和TensorFlow-GPU](untitled-2.md)
 * [附录4：厉害的象棋游戏AI](fu-lu-4-na-xie-li-hai-de-xiang-qi-you-xi-ai.md)
 * [附录5：不同地区的围棋规则](fu-lu-5-bu-tong-de-wei-qi-gui-ze.md)
-* [HDF5文件结构](hdf5-wen-jian-jie-gou.md)
 * [结尾](ling-sui-ji-lu.md)
 * [Pytorch入门指南](pytorch-ru-men-zhi-nan-1.md)
 * [反向传播算法指南](pytorch-ru-men-zhi-nan.md)
