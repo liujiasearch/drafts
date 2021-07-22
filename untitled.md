@@ -482,7 +482,7 @@ $$
 
 ## 3.4 监督学习
 
-机器学习能够在近些年获得如此迅猛的发展，和人们能更便捷地获取大量的数据是密不可分的。我们接下来要实现的基础智能AI也同样需要大量的数据。作为AI的学习数据，可以从 [_`https://www.u-go.net/gamerecords/`_](https://www.u-go.net/gamerecords/) 获取历年来在KGS上7段以上选手之间的对弈棋谱。网站上有“.zip”、“.tar.gz”和“.tar.bz2”三种格式。为了方便，我们在windows上处理这些数据，因此，我们只使用“.zip”格式的文件。如果你愿意，完全可以手工逐个点击下载，不过为了方便和快速，这里提供一个Python小程序，方便地获取所有的“.zip”格式链接。 右键浏览器，把网页文件保存在myGO\SGF\_Parser文件夹下，使用默认文件名“u-go.net.html”保存。 编辑Python文件：
+机器学习能够在近些年获得如此迅猛的发展，和人们能更便捷地获取大量的数据是密不可分的。我们接下来要实现的基础智能AI也同样需要大量的数据。作为AI的学习教材，可以从 [_`https://www.u-go.net/gamerecords/`_](https://www.u-go.net/gamerecords/) 获取历年来在KGS上7段以上选手之间的对弈棋谱。网站上有“.zip”、“.tar.gz”和“.tar.bz2”三种格式。为了方便，我们在windows上处理这些数据，因此，我们只使用“.zip”格式的文件。如果你愿意，完全可以手工逐个点击下载，不过为了方便和快速，这里提供一个Python小程序，方便地获取所有的“.zip”格式链接。 右键浏览器，把网页文件保存在myGO\SGF\_Parser文件夹下，使用默认文件名“u-go.net.html”保存。 编辑Python文件：
 
 {% code title="myGO\\SGF\_Parser\\fetchLinks.py" %}
 ```python
