@@ -294,7 +294,7 @@ class GoBoard:
 5. 辅助功能三，预先判断落子后的情形。这个功能是为了辅助裁判类判断落子是否符合围棋规则而设计的；
 6. 棋盘类对外展示的函数，目的是方便人类观看。
 
-上述功能中，`getStoneNeighbours()`、`isOnBoard()`和`updateZobrist()`都非常简单，不再累述。`evaluate()`大量复用了`envUpdate()`中的代码，这里也省去它这部分的说明，读者若有兴趣可以自行研读源码。
+上述功能中，`getStoneNeighbours()`、`isOnBoard()`和`updateZobrist()`都非常简单，不再累述。`evaluate()`大量复用了`envUpdate()`中的代码，这里也省去它这部分的说明，读者若有兴趣可以自行研读源码，下面对`envUpdate()`和`printBoard()`两个函数做一下简要的解释说明。
 
 {% code title="myGO\\goEnv.py" %}
 ```python
@@ -340,14 +340,14 @@ class GoBoard:
 ```
 {% endcode %}
 
-1. 先看看落子点四周都有哪些串棋；
-2. 串棋也就三种情况，属于黑棋，属于白棋，或者是空着的；
+1. 先看看落子点四周都有哪些棋串；
+2. 棋串仅包含三种情况，属于黑棋，属于白棋，或者是空着的；
 3. 如果周边没有串棋，就加一口气；
 4. 如果周边是自己势力范围的串棋，就先记录下来；
 5. 如果是对方的串棋，就记在对方名下；
 6. 先把自己这个落子看作一个独立的串棋；
 7. 把相连的串棋连接起来，形成一个更强大的串棋；
-8. 棋盘上的每个子都对应某串串棋，是点到链的映射关系。更新了串棋后就要更新这个映射关系；
+8. 棋盘上的每个子都对应某串棋串。这其实是做了点到链的映射关系表，更新了串棋后就要更新这个映射关系；
 9. 检查对方的子，看看己方落子后是不是要减掉对方的气；
 10. 如果对方剩余的气是零，就要提掉对方的子；
 11. 提掉对方的子前先为己方加上这口气。
@@ -357,13 +357,13 @@ class GoBoard:
 class GoBoard:
     ...
     def printBoard(self):
-        COLS = 'ABCDEFGHJKLMNOPQRST'            #1
-        STONE_TO_CHAR = {            #2
+        COLS = 'ABCDEFGHJKLMNOPQRST'    #1
+        STONE_TO_CHAR = {    #2
             None: ' . ',
             Player.black: ' x ',
             Player.white: ' o ',
         }
-        for row in range(self.height):            #3
+        for row in range(self.height):    #3
             bump = " " if row > 8 else ""
             line = []
             for col in range(self.width):
@@ -382,7 +382,7 @@ class GoBoard:
 
 ## 2.6 引入裁判
 
-和正式比赛类似，我们的裁判类也负责判断落子的合法性，判断胜负以及判断轮到谁来下棋。针对每个功能我们都独立设计一个函数来对应。
+和正式比赛类似，我们的裁判类也负责判断落子的合法性，判断胜负以及判断当前应该轮到谁来落子下棋。针对每个功能我们都独立设计一个函数。
 
 {% tabs %}
 {% tab title="落子合法性" %}
@@ -397,15 +397,15 @@ class GoJudge():
             return False
         if not board.stones.get(stone)==None:
             return False
-        [noLiberties,zobrist]=board.evaluate(player,stone)            #1
+        [noLiberties,zobrist]=board.evaluate(player,stone)    #1
         if noLiberties==0 or (player,zobrist) \
-        in board.board_records:            #2
+        in board.board_records:    #2
             return False
         return True
 ```
 {% endcode %}
 
-1. 落子是否合法我们需要先模拟落子后才能知道，所以调用棋盘类中的evaluate方法；
+1. 落子是否合法我们需要先模拟落子后才能知道，所以调用棋盘类中的`evaluate()`方法；
 2. 我们采用中国围棋规则，不允许重复己方已经下过的棋形，不允许自杀。关于各区域围棋规则的差异可以参考附录5：不同的围棋规则。
 {% endtab %}
 {% endtabs %}
@@ -417,20 +417,20 @@ class GoJudge():
 class GoJudge():
     @classmethod    
     def NextState(cls,player_current,move,board):
-        if move==(-10,-10):             #1
+        if move==(-10,-10):    #1
             return GameState.g_resign,player_current.other()
         elif move==(-5,-5):
-            if board.move_records[-1][1]==(-5,-5):            #2
+            if board.move_records[-1][1]==(-5,-5):    #2
                 return GameState.g_over,None      
             else:
                 return GameState.g_continue,\
-                player_current.other()            #3
+                player_current.other()    #3
         else:
             return GameState.g_continue,player_current.other()
 ```
 {% endcode %}
 
-1. 如果有人投降，则棋局结束，不用再判断该由谁下下一步；
+1. 如果有人投降，则棋局结束，不用再判断该由谁下下一步棋；
 2. 如果遇到弃权，需要判断上一步是否也是弃权。根据围棋规则，如果双方连续弃权一步，则棋局结束；
 3. 交换下棋方。
 {% endtab %}

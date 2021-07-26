@@ -16,7 +16,7 @@
 * [附录3：Numpy和其它工具的快速入门指南](fu-lu-3numpy-he-qi-ta-gong-ju-de-kuai-su-ru-men-zhi-nan/README.md)
   * [第八章 DQN](fu-lu-3numpy-he-qi-ta-gong-ju-de-kuai-su-ru-men-zhi-nan/dqn.md)
 * [temp](temp.md)
-* [Windows安装TensorFlow和TensorFlow-GPU](untitled-2.md)
+* [附录1：Windows安装TensorFlow和TensorFlow-GPU](untitled-2.md)
 * [附录4：厉害的象棋游戏AI](fu-lu-4-na-xie-li-hai-de-xiang-qi-you-xi-ai.md)
 * [附录5：不同地区的围棋规则](fu-lu-5-bu-tong-de-wei-qi-gui-ze.md)
 * [结尾](ling-sui-ji-lu.md)
