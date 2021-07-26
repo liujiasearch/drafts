@@ -436,7 +436,7 @@ class GoJudge():
 {% endtab %}
 {% endtabs %}
 
-人类下棋时，可以在围棋下到中盘时就做出胜负判断。围棋规则在定义胜负时，对于有争议的区域采用双方各自轮流占满公共点来决定归属。可是很少或者说没有谁会真的下到最后占满整个棋盘后才能搞清楚谁胜谁负。计算机则不行，我们不得不下到最后没有地方落子了才能判断胜负。在我们的智能体还不会判断局势，不会主动投降之前，程序只能通过连续两次弃权来判断当前游戏结束，才会进入胜负判定阶段。我们采用中国的数子法来得到胜负结果，因为这种方法在代码上实现更容易。
+人类下棋时，可以在围棋下到中盘时就做出胜负判断。围棋规则在定义胜负时，对于有争议的区域采用双方各自轮流占满公共点来决定归属。可是很少或者说没有谁会真的下到最后占满整个棋盘后才能搞清楚谁胜谁负。计算机则不行，我们不得不下到最后没有空位可以落子了才能判断胜负。在我们的智能体还不会判断局势，不会主动投降之前，程序只能通过连续两次弃权来判断当前游戏结束，然后才会进入胜负判定阶段。这里采用中国的数子法来得到胜负结果，因为这种方法在代码上实现更容易。
 
 {% tabs %}
 {% tab title="判断胜负" %}
@@ -445,20 +445,20 @@ class GoJudge():
 class GoJudge():
     @classmethod
     def getGameResult(cls,board):        
-        komi=7.5            #1
+        komi=7.5    #1
         ...
         for i in range(board.height):
             for j in range(board.width):
                 if board.stones.get((i,j))==None:
                     if (i,j) in black_territory or (i,j) in \
                     white_territory or (i,j) in neutral_territory:
-                        continue            #2
+                        continue    #2
                     else:
                         visited_stones={(i,j)}
                         boarders=findBoarders(board,(i,j),visited_stones)
                         if len(boarders) !=1:
-                            neutral_territory|=visited_stones        #3
-                        else:            #4
+                            neutral_territory|=visited_stones    #3
+                        else:    #4
                             if Player.black in boarders:
                                 black_territory|=visited_stones
                             else:
@@ -471,11 +471,11 @@ class GoJudge():
                     pass
         black_counts=len(blacks)+len(black_territory)
         white_counts=len(whites)+len(white_territory)
-        return black_counts-(white_counts+komi)            #5
+        return black_counts-(white_counts+komi)    #5
 ```
 {% endcode %}
 
-1. 采用中国规则，贴7.5目；
+1. 采用中国规则，3又3/4子相当于贴7目半；
 2. 跳过已知的势力范围和公共区域，我们的计算将忽略公共区域。不过如果机器一定要下到最后直到没有空可以填入，就不会存在公共区域；
 3. 将空点加入公共区域，所谓公共区域，就是黑棋和白棋都可以下，不属于哪一方的势力范围；
 4. 如果不是公共区域，就按实际情况记入对应的势力；
@@ -485,43 +485,43 @@ class GoJudge():
 
 ## 2.7 让智能体下棋
 
-“欲破曹公，须用火攻，万事俱备，只欠东风”。赤壁之战前诸葛亮点破周瑜把一切准备工作都做好了，只差东风这最后一个重要条件。我们现在也已经有了实现围棋软件的全部素材，就差把它们拼装起来真正地下上一盘棋了。我们试着把散乱的积木拼起来，搭成一个能够自己下棋的围棋软件。
+“欲破曹公，须用火攻，万事俱备，只欠东风”。赤壁之战前诸葛亮点破周瑜把一切准备工作都做好了，只差东风这最后一个重要条件。我们现在也已经有了实现围棋软件的全部素材，就差把它们拼装起来真正地下上一盘棋了。让我们试着把散乱的积木拼搭起来，组成一个能够自己下棋的围棋软件吧。
 
 {% code title="myGO\\gamePlay.py" %}
 ```python
 def main():
-    board=GoBoard()            #1
-    agent_b=GoAgent(Player.black)            #2
+    board=GoBoard()    #1
+    agent_b=GoAgent(Player.black)    #2
     agent_w=GoAgent(Player.white)
     os.system('cls')
     board.printBoard()
-    whosTurn=Player.black            #3
+    whosTurn=Player.black    #3
     player_next=whosTurn
     game_state=GameState.g_continue
     while game_state==GameState.g_continue:
-        time.sleep(.3)            #4    
+        time.sleep(.3)    #4    
         if whosTurn==Player.black:
-            move=agent_b.chooseMove('R',board)            #5
-            '''人工输入            #6
+            move=agent_b.chooseMove('R',board)    #5
+            '''人工输入    #6
             move=input('-- ') #A1
             move=to_stone(move.strip())
-            if not GoJudge.isLegalMove(board,move,whosTurn):            #7
+            if not GoJudge.isLegalMove(board,move,whosTurn):    #7
                 continue
             '''
 
         else:
             move=agent_w.chooseMove('RM',board)        
         [game_state,player_next]=GoJudge.NextState(whosTurn,move,board)
-        board.envUpdate(whosTurn,move)            #8
+        board.envUpdate(whosTurn,move)    #8
         if game_state!=GameState.g_over and game_state!=GameState.g_resign:
             os.system('cls')
             board.printBoard()
             #print(board.toNormalBoard())
             whosTurn=player_next
             print(whosTurn)
-    if game_state==GameState.g_resign:            #9
+    if game_state==GameState.g_resign:    #9
         print(player_next,"wins!")
-    if game_state==GameState.g_over:            #10
+    if game_state==GameState.g_over:    #10
         result=GoJudge.getGameResult(board)
         if result>0:
             print("black wins")
@@ -535,10 +535,10 @@ if __name__ == '__main__':
 ```
 {% endcode %}
 
-1. 实例化棋盘；
+1. 实例化一个棋盘；
 2. 为黑棋和白棋各实例化一个下棋机器人；
 3. 按照围棋惯例，总是由黑棋先落子；
-4. 没下一步都停0.3秒，目的是为了方便人眼观看；
+4. 每下一步都停0.3秒，目的是为了方便人眼观看；
 5. 命令下棋机器人根据当前局面采用随机策略选一步棋；
 6. 如果想尝试自己和机器对战，可以把这段注释去掉，手工与白棋对弈；
 7. 为人工下棋增加一步落子合法性校验；
@@ -546,5 +546,5 @@ if __name__ == '__main__':
 9. 如果有人主动投降就直接判定胜负；
 10. 如果没有人主动投降，就一直下到无子可落，利用数子法进行胜负判定。
 
-鼓励读者尝试执行`gamePlay.py`来观察机器随机下棋的效果，看着浑然没有思维能力的机器下出有模有样的围棋还是很有意思的。
+非常鼓励读者尝试执行myGO源码下的`gamePlay.py`来观察机器随机下棋的效果，看着浑然没有思维能力的机器下出有模有样的围棋还是很有意思的。
 
