@@ -294,7 +294,7 @@ class GoBoard:
 5. 辅助功能三，预先判断落子后的情形。这个功能是为了辅助裁判类判断落子是否符合围棋规则而设计的；
 6. 棋盘类对外展示的函数，目的是方便人类观看。
 
-上述功能中，`getStoneNeighbours()`、`isOnBoard()`和`updateZobrist()`都非常简单，不再累述。`evaluate()`大量复用了`envUpdate()`中的代码，这里也省去它这部分的说明，读者若有兴趣可以自行研读源码，下面对`envUpdate()`和`printBoard()`两个函数做一下简要的解释说明。
+上述功能中，`getStoneNeighbours()`、`isOnBoard()`和`updateZobrist()`都非常简单，不再赘述。`evaluate()`大量复用了`envUpdate()`中的代码，这里也省去它这部分的说明，读者若有兴趣可以自行研读源码，下面对`envUpdate()`和`printBoard()`两个函数做一下简要的解释说明。
 
 {% code title="myGO\\goEnv.py" %}
 ```python
