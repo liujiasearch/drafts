@@ -3,7 +3,7 @@ description: >-
   直接使用TensorFlow的CPU版本不是复杂的事情，但是碰巧你有一块NVIDIA的显卡，弃之不用是非常可惜的，但是在Windows上安装TensorFlow的GPU加速版本常常令人抓狂。最保险和最安全的做法是直接从源码进行编译，但是整个过程复杂而又乏味，谁又能保证编译过程不出错呢？这一章将尽可能的从细节上介绍如何在Windows安装TensorFlow和TensorFlow的GPU版本。
 ---
 
-# Windows安装TensorFlow和TensorFlow-GPU
+# 附录1：Windows安装TensorFlow和TensorFlow-GPU
 
 ## 安装TensorFlow的特殊问题
 
