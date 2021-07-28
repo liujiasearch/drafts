@@ -24,7 +24,6 @@ description: 这一章概要地介绍了传统棋类的AI算法，主要是极�
 
 假设当前井字棋游戏下到如图3-1所示的状态，现在轮到画×方落棋，显然下到右下角就能赢取胜利。要计算机程序利用极小化极大算法进行井字棋游戏，我们首先就需要为这个AI程序定义一个知道怎么在下一步获胜的函数。
 
-{% code title="myGO\\tic-tac-toe\\agent.py" %}
 ```python
 def findWinMove(game_state,player):
     possible_moves = []        
@@ -34,7 +33,6 @@ def findWinMove(game_state,player):
             possible_moves.append(candidate_move)    #3
     return possible_moves    #4
 ```
-{% endcode %}
 
 1. 遍历当前玩家所有的合法选择；
 2. 得到每个选择带来的结果；
@@ -47,7 +45,6 @@ def findWinMove(game_state,player):
 
 但是仅仅知道怎么取胜还是远远不够的。让我们想想，双方是怎么会下到图3-1这个局面的呢？我们把游戏倒退一步，回到图3-2的样子。执×方选择了左上角和中心的位置，执〇方现在也占据了左下角。现在轮到执〇方走一步，他会很天真地认为如果自己占据了下路的中间位置就能在后一步中连成一线吗？这似乎是很可笑的，因为执×方会比他先连成一线。那么显然我们的智能程序必须要知道在自己取得胜利之前不能给对方任何获胜的机会。具体到井字棋游戏就是要占据对方能够获胜的位置，即如果己方当下不能立即赢取胜利，那么就必须要阻止对方在接下去的一步棋中获得胜利。由此我们还需要定义一个能避免自己失败行为的函数。
 
-{% code title="myGO\\tic-tac-toe\\agent.py" %}
 ```python
 def findMinLoseMoves(game_state,player):
     opponent = player.other()                                        #1
@@ -59,7 +56,6 @@ def findMinLoseMoves(game_state,player):
             possible_moves.append(candidate_move)                    #5
     return possible_moves
 ```
-{% endcode %}
 
 1. 初始化己方的对手；
 2. 遍历自己所有的合法选择；
@@ -69,11 +65,10 @@ def findMinLoseMoves(game_state,player):
 
 显然我们的程序在调用`findMinLoseMoves()`这个函数前需要先调用`findWinMove()`，只有知道自己不会在下一步中取胜才去思考阻止对方胜利的选择，因为一旦胜利了，游戏也就结束了。己方既然能够找到防止对方胜利的选择，相反地，对方也会使用这种相同的策略，所以无论如何选择，对方总有应对之策。按这个逻辑，在零和游戏中单纯模拟寻找胜利的选择是没有意义的，因为算法总是能保证在对方选择必胜的行动前就已经扼杀了这个选项。
 
-如果双方在各自的当前回合都无法必胜，我们就要继续搜寻下去，看看是不是存在对方至少要连下两步棋才可以阻止己方胜利的情形。如图3-3，如果执×方落棋到中心红色X点，那么执方〇必须同时堵住两个红色的画圈位置才可以避免执X方的胜利。根据这个想法，我们再实现一个函数`findNextWinMove()`，在调用该函数之后，对它返回的可选项进行筛选。
-
 ![&#x56FE; 3 - 3 &#x591A;&#x60F3;&#x4E24;&#x6B65;](.gitbook/assets/image%20%2815%29.png)
 
-{% code title="myGO\\tic-tac-toe\\agent.py" %}
+如果双方在各自的当前回合都无法必胜，我们就要继续搜寻下去，看看是不是存在对方至少要连下两步棋才可以阻止己方胜利的情形。如图3-3，如果执×方落棋到中心红色X点，那么执方〇必须同时堵住两个红色的画圈位置才可以避免执X方的胜利。根据这个想法，我们再实现一个函数`findNextWinMove()`，在调用该函数之后，对它返回的可选项进行筛选。
+
 ```python
 def findNextWinMove(game_state, player):
     opponent = player.other()
@@ -84,7 +79,6 @@ def findNextWinMove(game_state, player):
             return candidate_move
     return None
 ```
-{% endcode %}
 
 1. 这一步是整个函数的关键，逻辑上却很简单。如果己方当前选择使得对方在下一步无法阻止己方在下下一步获胜，那么当前一步棋必然是制胜棋。
 
