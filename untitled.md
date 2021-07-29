@@ -105,7 +105,7 @@ def findTwoMovesWin(game_state, player):
 
 ![&#x56FE; 3-4 &#x6781;&#x5C0F;&#x5316;&#x6700;&#x5927;&#x7B97;&#x6CD5;&#x7684;&#x987A;&#x5E8F;&#x601D;&#x7EF4;&#x8FC7;&#x7A0B;](.gitbook/assets/sin%20%2821%29.svg)
 
-虽然极小化极大算法在效率上不太理想，但是对于井字棋，它已经足够好了。最后为了完成这个AI程序，我们还需要使用一个小技巧，因为之前的伪代码是按照图3-4的顺序逻辑来写的，如果简单地照抄我们必须手工编写每一步判断函数。当然如果我们只考虑未来的有限步，这种方式勉强还是可行的，不过在一开始也说了，实现这种算法还得使用递归这种编程技巧，因为递归过程并不需要指定探索深度，只要计算机内存足够运行时就不会报错。在介绍这个小技巧前，我们还需要定义几个游戏的枚举类，这和在上一章所做的工作类似，定义枚举类仅仅是为了使得代码更加可读，也为了编程时方便对变量进行记忆。
+虽然极小化极大算法在效率上不太理想，但是对于井字棋，它已经足够好了。最后为了完成这个AI程序，我们还需要使用一个小技巧，因为之前的伪代码是按照图3-4的顺序逻辑来写的，如果简单地照抄我们必须手工编写每一步判断函数。当然如果我们只考虑未来的有限步，这种方式勉强还是可行的，不过在一开始也说了，实现这种算法还得使用递归这种编程技巧，因为递归过程并不需要指定探索深度，只要计算机内存足够运行时就不会报错。在介绍这个小技巧前，我们先定义几个游戏的枚举类和一些框架性的类方法，这和在上一章所做的工作类似，定义枚举类仅仅是为了使得代码更加可读，也为了编程时方便对变量进行记忆。
 
 {% code title="myGO\\tic-tac-toe\\main.py" %}
 ```python
@@ -123,7 +123,7 @@ player_o=-1
 ```
 {% endcode %}
 
-1. 井字棋的结局存在3种，这和大部分游戏一致。为了后面对棋局优劣的判断方便，对枚举值的赋值按输到赢，数值安排由小到大，这样安排的便利性将在后面实际编程中体现；
+1. 井字棋的结局存在胜、负与和棋3种结果。为了后面对棋局优劣的判断方便，对枚举值的赋值按输到赢，数值安排由小到大，这样安排的便利性将在后面实际编程中体现；
 2. 定义游戏的状态，主要是为了方便AI知道游戏什么时候结束；
 3. 为了编程方便，没有为执棋的双方再定义一个枚举类，而是直接为其赋了变量值，这在实践上并不是一个好的习惯，但是目前在我们的演示中这不会是一个问题。
 
@@ -151,7 +151,7 @@ class Board:
 ```
 {% endcode %}
 
-1. 将井字棋的棋盘初始化为一个3×3的全零numpy数组，1表示画X，-1表示画O；
+1. 将井字棋的棋盘初始化为一个3×3的全零numpy数组，用1表示画X，-1表示画O；
 2. 定义一个打印棋盘的方法，方便人机交互；
 3. 按行来打印棋盘。
 
@@ -171,16 +171,17 @@ class Game:
         self.bot2=None
 
     def getResult(self):    #3                   
-
+        ...
     def run(self,mode='hvh',bot1_mode='r',bot2_mode='r'):    #4
-
+        ...
     def applyMove(self,move):    #5
-
+        ...
     def simuApplyMove(self,move):    #6
-
+        ...
     def isLegalMove(self,move):    #7
-
+        ...
     def getLegalMoves(self):    #8
+        ...
 ```
 {% endcode %}
 
@@ -209,15 +210,80 @@ class Agent:
             moves=self.game.getLegalMoves()
             return random.choice(moves)            
         if self.mode=='ai':    #4
+            ...
 ```
 {% endcode %}
 
-1. 把Ai和具体的游戏实例挂钩，相当于告诉AI，它在下哪盘棋；
+1. 把AI和具体的游戏实例挂钩，相当于告诉AI，它在下哪盘棋；
 2. 给AI分配角色，告诉它是执X方还是执O方；
 3. AI可以有很多不同的智能算法，我们用mode来告诉它应该使用哪种算法；
-4. 定义出棋的方法，这里我们先提供两种方法，随机方法和贪婪的极小化极大算法。
+4. 定义出棋的方法，这里我们先提供两种方法，‘r’表示随机落子法，‘ai'表示采用极小化极大算法。
 
-随机方法的棋力非常弱，它从所有合法的选项中随机挑选出一个选择，专门实现随机方法这件事的目的是为了给后面的极小化极大算法提供一个参考对手，我们后面会看到贪婪算法与随机算法在棋力方面的差距。
+随机方法的棋力非常弱，它从所有合法的选项中随机挑选出一个选择，专门实现随机方法这件事的目的是为了给后面的极小化极大算法提供一个参考对手，我们后面会看到贪婪算法与随机算法在棋力方面的差距。我们先来着重看一下极小化极大算法在实际中的是如何实现的。
+
+{% code title="myGO\\tic-tac-toe\\ttt.py" %}
+```python
+        if self.mode=='ai':
+            moves=self.game.getLegalMoves()    #1
+            win_moves=[]    #2
+            loss_moves=[]    #2
+            draw_moves=[]    #2
+            for move in moves:
+                new_game=self.game.simuApplyMove(move)    #3
+                op_best_outcome=bestResultForOP(new_game)    #4
+                my_best_outcome=reverse_bestResultForOP(op_best_outcome)    #5
+                if my_best_outcome==GameResult.win:
+                    win_moves.append(move)
+                elif my_best_outcome==GameResult.loss:
+                    loss_moves.append(move)
+                else:
+                    draw_moves.append(move)
+            if win_moves:
+                return random.choice(win_moves)
+            elif draw_moves:
+                return random.choice(draw_moves)
+            else:
+                return random.choice(loss_moves)
+```
+{% endcode %}
+
+1. 仅考虑所有符合游戏规则的落子选项；
+2. 设置变量存放搜索出的必胜步、和局步和必输步；
+3. 模拟当前选项在当前局面后的效果，之前提过，这个行为就是类似于人类选手在头脑中思考当前走某一步后的可能结果；
+4. 这一步是极小化极大算法的核心，调用`bestResultForOP()`获取当前选项落子后，对手能得到的最好结果。这个和之前伪代码`findMinLoseMoves()`中的`opponent_winning_move = findOneMoveWin(next_state, opponent)`有异曲同工之妙；
+5. 对手下一步能达到的最好结果的相反面就是己方当前局面可以取得的最好结果；
+
+我们在编写极小化极大算法没有站在己方的角度来思考，而是站在了对方的角度来对棋局进行评价。正是这个技巧使得整个算法采用递归来实现变得具有可行性，否则我们只能采用像图3-4那样的循序逻辑来手工编写每一步落棋判断直到棋局结束。进入到`bestResultForOP()`内部查看源码会发现这个函数会调用`bestResultForOP()`本身，这也是递归写法的一个典型特征。如果己方要知道当前状态的最好结果就要查看对方在下一步情形下的最好结果，而对手想知道自己的最好结果就又要再看己方下下一步能够获得最好结果，如此往复循环直至游戏结束，即有一个明确的胜负或者和局的结果。
+
+{% code title="myGO\\tic-tac-toe\\ttt.py" %}
+```python
+def bestResultForOP(game):
+    if game.state==GameState.over:    #1
+        if game.winner==game.player:
+            return GameResult.win
+        elif game.winner==None:
+            return GameResult.draw
+        else:
+            return GameResult.loss
+    best_so_far=GameResult.loss    #2
+    for move in game.getLegalMoves():
+        new_game=game.simuApplyMove(move)    #3
+        op_best_outcome=bestResultForOP(new_game)    #4
+        my_best_outcome=reverse_bestResultForOP(op_best_outcome)
+        if best_so_far.value < my_best_outcome.value:    #5
+            best_so_far=my_best_outcome
+        if best_so_far==GameResult.win:    #6
+            break
+    return best_so_far
+```
+{% endcode %}
+
+1. 如果当前游戏状态已经结束了，则返回游戏的结果，递归的终止条件依赖这个判断；
+2. 初始化当前局面能够获得的最好结果；
+3. 模拟当前选项产生的新棋局。这个我们已经在外层的方法中看到过了，显然这是准备开始递归了。游戏的状态`state`在这个方法中更新，这个值控制着`bestResultForOP()`停止递归；
+4. 递归调用`bestResultForOP()`查看对手的最佳结果；
+5. 如果当前最佳结果有提升则更新该值；
+6. 胜利是棋局的最佳结果，一旦找到了这步棋就可以退出查找了。
 
 ## 3.2 Alpha-beta剪枝算法
 
