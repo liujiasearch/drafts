@@ -274,7 +274,7 @@ def bestResultForOP(game):
             best_so_far=my_best_outcome
         if best_so_far==GameResult.win:    #6
             break
-    return best_so_far
+    return best_so_far    #7
 ```
 {% endcode %}
 
@@ -283,7 +283,8 @@ def bestResultForOP(game):
 3. 模拟当前选项产生的新棋局。这个我们已经在外层的方法中看到过了，显然这是准备开始递归了。游戏的状态`state`在这个方法中更新，这个值控制着`bestResultForOP()`停止递归；
 4. 递归调用`bestResultForOP()`查看对手的最佳结果；
 5. 如果当前最佳结果有提升则更新该值；
-6. 胜利是棋局的最佳结果，一旦找到了这步棋就可以退出查找了。
+6. 胜利是棋局的最佳结果，一旦找到了这步棋就可以退出查找了；
+7. 返回当前玩家能获取的最佳结果。
 
 ## 3.2 Alpha-beta剪枝算法
 
@@ -389,30 +390,40 @@ def alpha_beta_prune(game, max_depth,best_o,best_x,evl_fn):
             next_game, max_depth - 1,
             best_o, best_x,
             evl_fn)    #5
-        my_result = -1 * op_best_result
-        if my_result > best_so_far:
-            best_so_far = my_result
+        my_result = -1 * op_best_result    #5
+        if my_result > best_so_far:    #6
+            best_so_far = my_result    #6
 
-        if game.player == player_o:
-            if best_so_far > best_o:
-                best_o = best_so_far
-            outcome_for_x = -1 * best_so_far
-            if outcome_for_x < best_x:
-                return best_so_far
+        if game.player == player_o:    #7
+            if best_so_far > best_o:    #8
+                best_o = best_so_far    #8
+            outcome_for_x = -1 * best_so_far    #9
+            if outcome_for_x < best_x:    #10
+                break
         elif game.player == player_x:
             if best_so_far > best_x:
                 best_x = best_so_far
             outcome_for_o = -1 * best_so_far
             if outcome_for_o < best_o:
-                return best_so_far
+                break
 
-    return best_so_far
+    return best_so_far    #11
 ```
 {% endcode %}
 
+1. 控制搜索深度。由于我们对平局和进行中的棋局的价值设置为0，而井字棋一共就9步落子，所以当这个搜索深度设置的比较浅时，算法在开头的几步和随机落子并没有什么区别。如果随机落子法在前3步完成了横竖相连，就可以击败我们的剪枝算法。这也从侧面说明了一个好的价值评估算法对于剪枝算法的重要性；
+2. 由于采用价值评估函数来对胜负的可能性进行评估，这里用一个极大数字或极小数字来表示明确的输赢胜负；
+3. 控制搜索深度，如果到达一定深度游戏还没有结束，就用价值评估函数的值来代替胜负的判断；
+4. 和极小化极大算法一样，初始化当前局面能取得的最佳价值；
+5. 这几步和`bestResultForOP()`中的写法是几乎相同的；
+6. 如果结果比之前记录的好则更新最佳价值。极小极大化算法中的最佳价值就是赢棋，所以没有更新最佳价值这一步，而Alpha-beta剪枝中因为是通过价值评价函数来估计胜负结果的，这个值可能会有很多不同的值，所以可能需要不停地更新最大的值；
+7. 根据当前执棋着是谁，将上一步得到的最佳值更新给不同的对象的最佳值；
+8. 如果当前玩家是执〇方，当前搜索值大于执〇方记录的最大值，则更新其记录的最大值。下面对执×方的判断后也使用了类似的操作步骤，就不再累述了；
+9. 一方的最佳进行进行反操作就是另一方的最差；
+10. 如果当前的一方最佳操作可以使得对方的最佳降低，那么就可以认为找到了一步必胜棋，并退出，当然也可以继续搜索不退出，但是由于已经找到了，再多找几个意义不大反而浪费了计算资源，这个在`bestResultForOP`中也有相似的对应操作；
+11. 返回当前玩家所能取得的最佳结果。
 
-
-搜索选项时我们会安排棋盘局面上的可落子顺序进行搜索。如果碰巧在一开始就找到了一个最好的选项，在搜索其它后续选项时会由于剩下的选项收益较低而被迅速地剪枝剪掉，如果运气不好，最好的选项在最后才被搜索到，那么Alpha-beta剪枝算法的速度并不会比极小化最大算法快。但是数学期望上，Alpha-beta剪枝算法的消耗时间会是极小化最大算法的一半。如果在搜索开始前引入一些启发性的算法先从最有潜质的着法开始搜索，这样可以缓解算法对着法寻找顺序的依赖。
+搜索选项时我们会安排棋盘局面上的可落子顺序进行搜索。如果碰巧在一开始就找到了一个最好的选项，在搜索其它后续选项时会由于剩下的选项收益较低而被迅速地剪枝剪掉，如果运气不好，最好的选项在最后才被搜索到，那么Alpha-beta剪枝算法的速度并不会比极小化最大算法快。但是数学期望上，Alpha-beta剪枝算法的消耗时间会是极小化最大算法的一半。如果在搜索开始前引入一些启发性的算法先从最有潜质的着法开始搜索，这样可以缓解算法对着法寻找顺序的依赖，不过这不是我们的重点，就不再多说了。
 
 ## 3.3棋类局势评估
 
