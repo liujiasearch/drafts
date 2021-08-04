@@ -10,7 +10,7 @@ description: 这一章概要地介绍了传统棋类的AI算法，主要是极�
 
 过去的传统方法一直没有能够在围棋上有所突破，但是在象棋等其他棋类上还是展现出了其强大的算法实力，了解这些内容，我觉得是有益的。现代基于神经网络的人工智能方法需要巨大的计算机算能，当我们没有足够的算能来训练出一个强大的棋类智能体时，尝试利用传统方法不失为一种变通之法。这就有点像牛顿力学与爱因斯坦相对论之间的关系，大部分时间，我们使用牛顿力学就好了。传统方法的一个致命问题是算法中带有太多人类的主观想法，在谈论细节时，我想读者会有更实际的感受。
 
-## 3.1 极小化极大算法
+## 3.1 极小化极大（Minimax）算法
 
 极小化极大算法常用于棋类等由两方较量的游戏和程序，它可以追溯到中世纪，属于是一种找出失败的最大可能性中的最小值的算法。算法的基本思想是假设游戏的获利与损失总是零总和的，从当前参与博弈的角色角度来看，该角色总是在可选的选项中挑选将自己的优势最大化的选择，而对手方总是选择令自己优势最小化的方法。很多棋类游戏可以采取此算法，例如井字棋。对于交替博弈的双方而言，如果站在各自的角度来看，当前博弈方总是挑选使得自己优势能够最大化的选项。两种看上去矛盾的描述和解释，仅仅是因为我们所选择的当前博弈对象不同而已。
 
@@ -105,7 +105,7 @@ def findTwoMovesWin(game_state, player):
 
 ![&#x56FE; 3-4 &#x6781;&#x5C0F;&#x5316;&#x6700;&#x5927;&#x7B97;&#x6CD5;&#x7684;&#x987A;&#x5E8F;&#x601D;&#x7EF4;&#x8FC7;&#x7A0B;](.gitbook/assets/sin%20%2821%29.svg)
 
-虽然极小化极大算法在效率上不太理想，但是对于井字棋，它已经足够好了。最后为了完成这个AI程序，我们还需要使用一个小技巧，因为之前的伪代码是按照图3-4的顺序逻辑来写的，如果简单地照抄我们必须手工编写每一步判断函数。当然如果我们只考虑未来的有限步，这种方式勉强还是可行的，不过在一开始也说了，实现这种算法还得使用递归这种编程技巧，因为递归过程并不需要指定探索深度，只要计算机内存足够运行时就不会报错。在介绍这个小技巧前，我们还需要定义几个游戏的枚举类，这和在上一章所做的工作类似，定义枚举类仅仅是为了使得代码更加可读，也为了编程时方便对变量进行记忆。
+虽然极小化极大算法在效率上不太理想，但是对于井字棋，它已经足够好了。最后为了完成这个AI程序，我们还需要使用一个小技巧，因为之前的伪代码是按照图3-4的顺序逻辑来写的，如果简单地照抄我们必须手工编写每一步判断函数。当然如果我们只考虑未来的有限步，这种方式勉强还是可行的，不过在一开始也说了，实现这种算法还得使用递归这种编程技巧，因为递归过程并不需要指定探索深度，只要计算机内存足够运行时就不会报错。在介绍这个小技巧前，我们先定义几个游戏的枚举类和一些框架性的类方法，这和在上一章所做的工作类似，定义枚举类仅仅是为了使得代码更加可读，也为了编程时方便对变量进行记忆。
 
 {% code title="myGO\\tic-tac-toe\\main.py" %}
 ```python
@@ -123,7 +123,7 @@ player_o=-1
 ```
 {% endcode %}
 
-1. 井字棋的结局存在3种，这和大部分游戏一致。为了后面对棋局优劣的判断方便，对枚举值的赋值按输到赢，数值安排由小到大，这样安排的便利性将在后面实际编程中体现；
+1. 井字棋的结局存在胜、负与和棋3种结果。为了后面对棋局优劣的判断方便，对枚举值的赋值按输到赢，数值安排由小到大，这样安排的便利性将在后面实际编程中体现；
 2. 定义游戏的状态，主要是为了方便AI知道游戏什么时候结束；
 3. 为了编程方便，没有为执棋的双方再定义一个枚举类，而是直接为其赋了变量值，这在实践上并不是一个好的习惯，但是目前在我们的演示中这不会是一个问题。
 
@@ -151,7 +151,7 @@ class Board:
 ```
 {% endcode %}
 
-1. 将井字棋的棋盘初始化为一个3×3的全零numpy数组，1表示画X，-1表示画O；
+1. 将井字棋的棋盘初始化为一个3×3的全零numpy数组，用1表示画X，-1表示画O；
 2. 定义一个打印棋盘的方法，方便人机交互；
 3. 按行来打印棋盘。
 
@@ -171,16 +171,17 @@ class Game:
         self.bot2=None
 
     def getResult(self):    #3                   
-
+        ...
     def run(self,mode='hvh',bot1_mode='r',bot2_mode='r'):    #4
-
+        ...
     def applyMove(self,move):    #5
-
+        ...
     def simuApplyMove(self,move):    #6
-
+        ...
     def isLegalMove(self,move):    #7
-
+        ...
     def getLegalMoves(self):    #8
+        ...
 ```
 {% endcode %}
 
@@ -209,19 +210,209 @@ class Agent:
             moves=self.game.getLegalMoves()
             return random.choice(moves)            
         if self.mode=='ai':    #4
+            ...
 ```
 {% endcode %}
 
-1. 把Ai和具体的游戏实例挂钩，相当于告诉AI，它在下哪盘棋；
+1. 把AI和具体的游戏实例挂钩，相当于告诉AI，它在下哪盘棋；
 2. 给AI分配角色，告诉它是执X方还是执O方；
 3. AI可以有很多不同的智能算法，我们用mode来告诉它应该使用哪种算法；
-4. 定义出棋的方法，这里我们先提供两种方法，随机方法和贪婪的极小化极大算法。
+4. 定义出棋的方法，这里我们先提供两种方法，‘r’表示随机落子法，‘ai'表示采用极小化极大算法。
 
-随机方法的棋力非常弱，它从所有合法的选项中随机挑选出一个选择，专门实现随机方法这件事的目的是为了给后面的极小化极大算法提供一个参考对手，我们后面会看到贪婪算法与随机算法在棋力方面的差距。
+随机方法的棋力非常弱，它从所有合法的选项中随机挑选出一个选择，专门实现随机方法这件事的目的是为了给后面的极小化极大算法提供一个参考对手，我们后面会看到贪婪算法与随机算法在棋力方面的差距。我们先来着重看一下极小化极大算法在实际中的是如何实现的。
+
+{% code title="myGO\\tic-tac-toe\\ttt.py" %}
+```python
+        if self.mode=='ai':
+            moves=self.game.getLegalMoves()    #1
+            win_moves=[]    #2
+            loss_moves=[]    #2
+            draw_moves=[]    #2
+            for move in moves:
+                new_game=self.game.simuApplyMove(move)    #3
+                op_best_outcome=bestResultForOP(new_game)    #4
+                my_best_outcome=reverse_bestResultForOP(op_best_outcome)    #5
+                if my_best_outcome==GameResult.win:
+                    win_moves.append(move)
+                elif my_best_outcome==GameResult.loss:
+                    loss_moves.append(move)
+                else:
+                    draw_moves.append(move)
+            if win_moves:
+                return random.choice(win_moves)
+            elif draw_moves:
+                return random.choice(draw_moves)
+            else:
+                return random.choice(loss_moves)
+```
+{% endcode %}
+
+1. 仅考虑所有符合游戏规则的落子选项；
+2. 设置变量存放搜索出的必胜步、和局步和必输步；
+3. 模拟当前选项在当前局面后的效果，之前提过，这个行为就是类似于人类选手在头脑中思考当前走某一步后的可能结果；
+4. 这一步是极小化极大算法的核心，由于前一步虚拟落子后接下去是对方的回合，所以调用`bestResultForOP()`获取当前选项落子后，对手能得到的最好结果。这个和之前伪代码`findMinLoseMoves()`中的`opponent_winning_move = findOneMoveWin(next_state, opponent)`有异曲同工之妙；
+5. 对手下一步能达到的最好结果的相反面就是己方当前局面可以取得的最好结果；
+
+我们在编写极小化极大算法没有站在己方的角度来思考，而是站在了对方的角度来对棋局进行评价。正是这个技巧使得整个算法采用递归来实现变得具有可行性，否则我们只能采用像图3-4那样的循序逻辑来手工编写每一步落棋判断直到棋局结束。进入到`bestResultForOP()`内部查看源码会发现这个函数会调用`bestResultForOP()`本身，这也是递归写法的一个典型特征。如果己方要知道当前状态的最好结果就要查看对方在下一步情形下的最好结果，而对手想知道自己的最好结果就又要再看己方下下一步能够获得最好结果，如此往复循环直至游戏结束，即有一个明确的胜负或者和局的结果。
+
+{% code title="myGO\\tic-tac-toe\\ttt.py" %}
+```python
+def bestResultForOP(game):
+    if game.state==GameState.over:    #1
+        if game.winner==game.player:
+            return GameResult.win
+        elif game.winner==None:
+            return GameResult.draw
+        else:
+            return GameResult.loss
+    best_so_far=GameResult.loss    #2
+    for move in game.getLegalMoves():
+        new_game=game.simuApplyMove(move)    #3
+        op_best_outcome=bestResultForOP(new_game)    #4
+        my_best_outcome=reverse_bestResultForOP(op_best_outcome)
+        if best_so_far.value < my_best_outcome.value:    #5
+            best_so_far=my_best_outcome
+        if best_so_far==GameResult.win:    #6
+            break
+    return best_so_far
+```
+{% endcode %}
+
+1. 如果当前游戏状态已经结束了，则返回游戏的结果，递归的终止条件依赖这个判断；
+2. 初始化当前局面能够获得的最好结果；
+3. 模拟当前选项产生的新棋局。这个我们已经在外层的方法中看到过了，显然这是准备开始递归了。游戏的状态`state`在这个方法中更新，这个值控制着`bestResultForOP()`停止递归；
+4. 递归调用`bestResultForOP()`查看对手的最佳结果；
+5. 如果当前最佳结果有提升则更新该值；
+6. 胜利是棋局的最佳结果，一旦找到了这步棋就可以退出查找了。
 
 ## 3.2 Alpha-beta剪枝算法
 
-Alpha-beta剪枝是一种搜索算法，其出现的目的是为了减少极小化极大算法（Minimax算法）搜索树的节点数。1997年5月11日，击败加里·卡斯帕罗夫的IBM”深蓝“就采用了这种算法。
+根据前面的介绍可以发现，极小化极大算法会遍历所有的可能性，但是常识告诉我们，并不是所有的选项都需要进行深入的考虑，存在着某些明显不利的选项，当出现这种选项时就可以换一种思路进行考虑了。Alpha-beta剪枝算法的出现正是为了减少极小化极大算法搜索树的节点数。1997年5月11日，击败加里·卡斯帕罗夫的IBM”深蓝“就采用了这种算法。
+
+![&#x56FE; 3-5 &#x6267;&#x3007;&#x65B9;&#x4E0B;](.gitbook/assets/sin%20%2823%29.svg)
+
+以井字棋为例，我们先来看看在下棋的过程中是否有优化空间。参考图3-5，此时轮到画〇方，如果不在虚线圈上落棋，下一步画×方画在虚圈处，游戏就结束了。当发现这类问题时，再去思考其它五个位子的落子收益其实是没有意义的，白白浪费了计算资源。
+
+再来看个象棋的例子。如图3-6，此时轮到红方走子。将炮横在中路是一个非常具有杀伤力的下法，后续可能可以配合自己的马走出“马后炮”的杀招。但是如果走了这一步，自己的马将会被对方的车立即吃掉，这一损失实在是太大了，所以面对此局面，实战时基本我们只考虑如何走马以避免被车吃掉，其它的走子都不会再深入考虑的。
+
+![&#x56FE; 3-6 &#x6267;&#x7EA2;&#x65B9;&#x7684;&#x9009;&#x62E9;](.gitbook/assets/sin%20%2822%29.svg)
+
+在行棋的过程中，当发现己方会出现极大损失或者极大获利时，我们仅考虑这些收益显著的情况而忽略掉其它可选项的行为就是剪枝算法的基本思想，而Alpha-beta剪枝算法就是专门设计用来减少极小化极大算法搜索树节点数的搜索算法。它的基本思想是根据上一层已经得到的当前最优结果，决定目前的搜索是否要继续下去，当算法评估出某策略的后续走法比之前策略的还差时，就会停止计算该策略的后续发展。Alpha-beta剪枝算法将搜索时间用在“更有希望”的子分支上，继而提升搜索深度，则同样时间内搜索深度平均来说可达极小化极大算法的两倍多。
+
+根据算法介绍可知，如果要使用Alpha-beta剪枝算法就会额外需要一套局面价值评估系统来决定哪线搜索分支是有希望的，而哪些是没有希望的分支。各种采用Alpha-beta剪枝算法的人工智能程序之间的实力差距其实就是由于局面价值评估系统的不同所造成的。局面价值评估系统带有很强的主观性，对于如何评估棋局的价值有点像莎士比亚说的，"一千个观众眼中有一千个哈姆雷特" 。下面将继续使用井字棋来演示Alpha-beta剪枝算法。为了省去设计井字棋的价值函数，我们粗暴地认为除了赢和输，其它所有盘面（包括和棋）的价值均为零，赢棋的盘面价值为一，输棋的盘面价值为负一。如果读者想自己在围棋游戏上尝试一下该算法，最简单的局面评估算法之一是计算当前双方在棋盘上剩余棋子的差额。不过实战中很少会有棋手主动提取对方已经穷途末路的棋子，所以也许这种评估方法得到的高价值局面反而会带来更加不利的影响。
+
+{% code title="myGO\\tic-tac-toe\\ttt.py" %}
+```python
+def evl_game(game):
+    if getResult(game.board.board)[1] != None:    #1
+        if game.player == getResult(game.board.board) == (0,1)[1]:    #2
+            return 1    #3
+        else:
+            return -1    #3
+    else:
+        return 0    #3
+```
+{% endcode %}
+
+1. 判断盘面结果，按照约定，对于井字棋，只有当棋局胜负已分时才对盘面价值进行判断，否则盘面价值为零；
+2. 判断当前进行价值评估的棋手是否是棋局的胜利方；
+3. 如果胜利方是当前棋手，则盘面价值为一，如果胜利方是当前棋手的对手，则盘面价值为负一，其它情况的价值按约定默认是零。
+
+引入了对棋局盘面的价值评估即表明我们在使用Alpha-beta剪枝算法时并不会执着于搜索时穷尽棋局，即在模拟思考行为时未必非要下到棋局结束时才停止。通常在使用这种算法时会设置一个搜索深度参数来控制算法仿真思考的回合数。从本质上来说，Alpha-beta剪枝算法是通过价值评估函数来控制算法的搜索广度，用参数设置来控制算法的搜索深度。
+
+同极小化极大算法相比，Alpha-beta剪枝算法并不是要等到棋局下到结束才给出对局面的评估，每个不同可选项得到的评估结果会由价值评估函数给出不同的数值结果，不尽相同的评估结果（极小化极大算法只有胜、负、和三种评估结果）导致Alpha-beta剪枝算法在使用过程中需要记录博弈双方在搜索过程中所能取得的最佳价值，我们可以把双方记录的最佳价值等价地看作是极小化极大算法中的胜利结果。传统上把一方所能搜索到的当前局面最佳价值叫做Alpha，另一方的最佳价值称作Beta，这种叫法也正是这个算法名称的由来。对于井字棋，将其简记为`best_o`和`best_x`。
+
+{% code title="myGO\\tic-tac-toe\\ttt.py" %}
+```python
+if self.mode=='ab':		#1
+		moves=self.game.getLegalMoves()		#2
+		best_moves=[]		#3
+		best_score=None		#4
+		best_o=minValue		#4
+		best_x=minValue		#4
+		for move in moves:		#5
+		    new_game=self.game.simuApplyMove(move)		#6
+		    op_best_outcome = alpha_beta_prune(
+		    										new_game, max_depth,best_o,best_x,evl_game
+		    										)		#7
+		    my_best_outcome = -1 * op_best_outcome		#8
+		    if (not best_moves) or my_best_outcome > best_score:		#9
+		        best_moves = [move]		#10
+		        best_score = my_best_outcome		#11
+		        if self.game.player == player_x:		#12
+		            best_x = best_score
+		        elif self.game.player == player_o:		#12
+		            best_o = best_score
+		    elif my_best_outcome == best_score:		#13
+		        best_moves.append(move)		#13
+		return random.choice(best_moves)		#13
+```
+{% endcode %}
+
+1. 模式ab代表Alpha-beta剪枝算法；
+2. 获取当前盘面上符合游戏规则的可选项；
+3. 存放最佳的落子选项；
+4. `best_score`存放当前盘面在搜索过程中得到过的最高选项价值，这个值在搜索过程中会不断地被更高的值所替换；
+5. 逐个搜索可选项；
+6. 仿真一下当前选项的落子；
+7. 仿真对手在当前落子下能取得的最佳价值；
+8. 己方能取得的最佳价值是对方能取得的最佳价值的反面；
+9. 只对当前价值高于已有记录的落子步进行处理；
+10. 搜索到了更高的价值，于是需要更新最佳落子；
+11. 更新已有记录的最佳落子价值；
+12. 将最佳价值更新给当前棋盘盘面的实际落子方；
+13. 如果搜索到的价值和记录的最高价值一致，则仅仅补充最佳落子的可选范围，通过随机抽取高价值落子使得下棋过程中棋局更多变，也更贴近人类行为。
+
+上面的代码和极小化极大算法在框架上是非常相似的，如果读者仔细思索就会发现Alpha-beta算法和极小化极大算法并没有什么本质上的区别，仅仅是将胜负结果的判断用一个价值判断函数替代了。既然Alpha-beta算法是对极小化极大算法的优化，所以Alpha-beta也只能用递归来实现。`alpha_beta_prune`函数实现了整个算法的核心功能，读者可以将极小化极大算法中的`bestResultForOP`和这个`alpha_beta_prune`比较着来看。
+
+{% code title="myGO\\tic-tac-toe\\ttt.py" %}
+```python
+
+max_depth=4    #1
+
+def alpha_beta_prune(game, max_depth,best_o,best_x,evl_fn):
+    if game.state==GameState.over:
+        if game.winner==game.player:
+            return maxValue    #2
+        elif game.winner==None:
+            return 0
+        else:
+            return minValue    #2
+
+    if max_depth == 0:    #3
+        return evl_fn(game)    #3
+
+    best_so_far = minValue    #4
+    for move in game.getLegalMoves():    #5
+        next_game = game.simuApplyMove(move)    #5
+        op_best_result = alpha_beta_prune(    
+            next_game, max_depth - 1,
+            best_o, best_x,
+            evl_fn)    #5
+        my_result = -1 * op_best_result
+        if my_result > best_so_far:
+            best_so_far = my_result
+
+        if game.player == player_o:
+            if best_so_far > best_o:
+                best_o = best_so_far
+            outcome_for_x = -1 * best_so_far
+            if outcome_for_x < best_x:
+                return best_so_far
+        elif game.player == player_x:
+            if best_so_far > best_x:
+                best_x = best_so_far
+            outcome_for_o = -1 * best_so_far
+            if outcome_for_o < best_o:
+                return best_so_far
+
+    return best_so_far
+```
+{% endcode %}
+
+
+
+搜索选项时我们会安排棋盘局面上的可落子顺序进行搜索。如果碰巧在一开始就找到了一个最好的选项，在搜索其它后续选项时会由于剩下的选项收益较低而被迅速地剪枝剪掉，如果运气不好，最好的选项在最后才被搜索到，那么Alpha-beta剪枝算法的速度并不会比极小化最大算法快。但是数学期望上，Alpha-beta剪枝算法的消耗时间会是极小化最大算法的一半。如果在搜索开始前引入一些启发性的算法先从最有潜质的着法开始搜索，这样可以缓解算法对着法寻找顺序的依赖。
 
 ## 3.3棋类局势评估
 
