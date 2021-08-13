@@ -108,7 +108,7 @@ $$
 
 ## 获取训练样本
 
-[u-go.net](https://www.u-go.net/)是一个围棋爱好者自建的网站，我们能从上面免费下载到[K Go Server](http://www.gokgs.com/)（KGS）网站上棋手的对战记录。这些对战记录都被保存为SGF格式文件。网站上提供了[7段以上](https://u-go.net/gamerecords/)或[4段以上](https://u-go.net/gamerecords-4d/)棋手的对弈记录，并且提供“.zip”、“.tar.gz”和“.tar.bz2”三种格式下载。通常为了保证机器学习后的下棋棋力，可以采用7段以上的对弈棋谱，如果样本偏少的话，再考虑使用4段以上的棋谱。为了在windows上处理这些数据方便，我们使用“.zip”格式的文件。如果读者愿意，完全可以手工逐个点击下载，不过为了方便和快速，MyGo的SGF\_Parser目录下提供了一个Python小程序，可以使用这个程序方便地获取所有的“.zip”格式链接。 具体的操作方法为：右键浏览器，把网页文件保存在myGO\SGF\_Parser文件夹下，使用默认文件名“u-go.net.html”保存。 编辑Python文件：
+[u-go.net](https://www.u-go.net/)是一个围棋爱好者自建的网站，我们能从上面免费下载到[K Go Server](http://www.gokgs.com/)（KGS）网站上棋手的对战记录。这些对战记录都被保存为SGF格式文件。网站上提供了[7段以上](https://u-go.net/gamerecords/)或[4段以上](https://u-go.net/gamerecords-4d/)棋手的对弈记录，并且提供“.zip”、“.tar.gz”和“.tar.bz2”三种格式下载。通常为了保证机器学习后的下棋棋力，可以采用7段以上的对弈棋谱，如果样本偏少的话，再考虑使用4段以上的棋谱。为了在windows上处理这些数据方便，我们使用“.zip”格式的文件。如果读者愿意，完全可以手工逐个点击下载，不过为了方便和快速，MyGo的SGF\_Parser目录下提供了一个Python小程序，可以使用这个程序方便地获取所有的“.zip”格式链接。 具体的操作方法为：右键浏览器，把网页文件保存在MyGo\SGF\_Parser文件夹下，使用默认文件名“u-go.net.html”保存。 编辑Python文件：
 
 {% code title="MyGo\\SGF\_Parser\\fetchLinks.py" %}
 ```python
