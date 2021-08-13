@@ -37,7 +37,7 @@ Python是面向对象的语言，为了体现出这种编程方式的优越性�
 
 {% tabs %}
 {% tab title="棋盘类" %}
-{% code title="MyGo\\goEnv.py" %}
+{% code title="myGO\\goEnv.py" %}
 ```python
 class GoBoard:
     def __init__(self,width=19,height=19): #1
@@ -61,7 +61,7 @@ class GoBoard:
 
 {% tabs %}
 {% tab title="棋手类" %}
-{% code title="MyGo\\goAgent.py" %}
+{% code title="myGO\\goAgent.py" %}
 ```python
 class GoAgent:            #1
     def __init__(self,who):
@@ -76,7 +76,7 @@ class GoAgent:            #1
 
 {% tabs %}
 {% tab title="裁判类" %}
-{% code title="MyGo\\goJudge.py" %}
+{% code title="myGO\\goJudge.py" %}
 ```python
 class GoJudge():            #1
     @classmethod
@@ -91,7 +91,7 @@ class GoJudge():            #1
 ```
 {% endcode %}
 
-1. 对于计算机模拟下棋，裁判类并不是必须的。除了正规比赛，胜负的判断可以由下棋的双方自行商定。MyGo专门把裁判抽象出来作为一个工具类，目的是方便判断棋局的胜负以及落子的合法性等。也可以不实现这个类，而把其中的功能放在另外两个类里实现。
+1. 对于计算机模拟下棋，裁判类并不是必须的。除了正规比赛，胜负的判断可以由下棋的双方自行商定。myGO专门把裁判抽象出来作为一个工具类，目的是方便判断棋局的胜负以及落子的合法性等。也可以不实现这个类，而把其中的功能放在另外两个类里实现。
 {% endtab %}
 {% endtabs %}
 
@@ -99,7 +99,7 @@ class GoJudge():            #1
 
 {% tabs %}
 {% tab title="棋串类" %}
-{% code title="MyGo\\utilities.py" %}
+{% code title="myGO\\utilities.py" %}
 ```python
 class StoneString:
     def __init__(self,player,stones,liberties):
@@ -130,7 +130,7 @@ class StoneString:
 
 {% tabs %}
 {% tab title="棋子类" %}
-{% code title="MyGo\\utilities.py" %}
+{% code title="myGO\\utilities.py" %}
 ```python
 class Player(Enum):    #1
     black=0
@@ -164,7 +164,7 @@ $$
 
 {% tabs %}
 {% tab title="生成佐布里斯特散列" %}
-{% code title="MyGo\\genZobrist.py" %}
+{% code title="myGO\\genZobrist.py" %}
 ```python
 import random
 MAX63 = 2**63-1    #1
@@ -187,7 +187,7 @@ while len(sets)<19*19+1:
 
 可以把智能体下棋的过程抽象成两个类函数。
 
-{% code title="MyGo\\goAgent.py" %}
+{% code title="myGO\\goAgent.py" %}
 ```python
 class GoAgent:
     ...
@@ -204,7 +204,7 @@ class GoAgent:
 
 有了上面列出的两个函数，我们的围棋智能体就能够和人类一样在棋盘上下棋了。我们再逐一看一下这两个函数到底实现了一些什么功能。
 
-{% code title="MyGo\\goAgent.py" %}
+{% code title="myGO\\goAgent.py" %}
 ```python
 class GoAgent:
     ...
@@ -230,7 +230,7 @@ class GoAgent:
 4. 判断随机生成的落子点是否符合游戏规则以及一些我们自定义的内置策略；
 5. 如果生成了5次都不满足要求，我们就弃走这一步。人为规定返回（-5，-5）表示弃权一手。
 
-{% code title="MyGo\\goAgent.py" %}
+{% code title="myGO\\goAgent.py" %}
 ```python
 class GoAgent:
     ...
@@ -268,7 +268,7 @@ class GoAgent:
 
 围棋的棋盘类负责记录每一回合双方的落子情况，另外我们还在棋盘类上实现了三个辅助功能。这三辅助功能当然也可以不在棋盘类里实现，而是放在另外两个核心类里实现。读者可以根据自己的情况和喜好自行斟酌。
 
-{% code title="MyGo\\goEnv.py" %}
+{% code title="myGO\\goEnv.py" %}
 ```python
 class GoBoard:
     ...
@@ -296,7 +296,7 @@ class GoBoard:
 
 上述功能中，`getStoneNeighbours()`、`isOnBoard()`和`updateZobrist()`都非常简单，不再赘述。`evaluate()`大量复用了`envUpdate()`中的代码，这里也省去它这部分的说明，读者若有兴趣可以自行研读源码，下面对`envUpdate()`和`printBoard()`两个函数做一下简要的解释说明。
 
-{% code title="MyGo\\goEnv.py" %}
+{% code title="myGO\\goEnv.py" %}
 ```python
 class GoBoard:
     ...
@@ -352,7 +352,7 @@ class GoBoard:
 10. 如果对方剩余的气是零，就要提掉对方的子；
 11. 提掉对方的子前先为己方加上这口气。
 
-{% code title="MyGo\\goEnv.py" %}
+{% code title="myGO\\goEnv.py" %}
 ```python
 class GoBoard:
     ...
@@ -386,7 +386,7 @@ class GoBoard:
 
 {% tabs %}
 {% tab title="落子合法性" %}
-{% code title="MyGo\\goJudge.py" %}
+{% code title="myGO\\goJudge.py" %}
 ```python
 class GoJudge():
     @classmethod
@@ -412,7 +412,7 @@ class GoJudge():
 
 {% tabs %}
 {% tab title="当前谁落子" %}
-{% code title="MyGo\\goJudge.py" %}
+{% code title="myGO\\goJudge.py" %}
 ```python
 class GoJudge():
     @classmethod    
@@ -440,7 +440,7 @@ class GoJudge():
 
 {% tabs %}
 {% tab title="判断胜负" %}
-{% code title="MyGo\\goJudge.py" %}
+{% code title="myGO\\goJudge.py" %}
 ```python
 class GoJudge():
     @classmethod
@@ -487,7 +487,7 @@ class GoJudge():
 
 “欲破曹公，须用火攻，万事俱备，只欠东风”。赤壁之战前诸葛亮点破周瑜把一切准备工作都做好了，只差东风这最后一个重要条件。我们现在也已经有了实现围棋软件的全部素材，就差把它们拼装起来真正地下上一盘棋了。让我们试着把散乱的积木拼搭起来，组成一个能够自己下棋的围棋软件吧。
 
-{% code title="MyGo\\gamePlay.py" %}
+{% code title="myGO\\gamePlay.py" %}
 ```python
 def main():
     board=GoBoard()    #1
@@ -546,5 +546,5 @@ if __name__ == '__main__':
 9. 如果有人主动投降就直接判定胜负；
 10. 如果没有人主动投降，就一直下到无子可落，利用数子法进行胜负判定。
 
-非常鼓励读者尝试执行MyGo源码下的`gamePlay.py`来观察机器随机下棋的效果，看着浑然没有思维能力的机器下出有模有样的围棋还是很有意思的。
+非常鼓励读者尝试执行myGO源码下的`gamePlay.py`来观察机器随机下棋的效果，看着浑然没有思维能力的机器下出有模有样的围棋还是很有意思的。
 

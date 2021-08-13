@@ -107,7 +107,7 @@ def findTwoMovesWin(game_state, player):
 
 虽然极小化极大算法在效率上不太理想，但是对于井字棋，它已经足够好了。最后为了完成这个AI程序，我们还需要使用一个小技巧，因为之前的伪代码是按照图3-4的顺序逻辑来写的，如果简单地照抄我们必须手工编写每一步判断函数。当然如果我们只考虑未来的有限步，这种方式勉强还是可行的，不过在一开始也说了，实现这种算法还得使用递归这种编程技巧，因为递归过程并不需要指定探索深度，只要计算机内存足够运行时就不会报错。在介绍这个小技巧前，我们先定义几个游戏的枚举类和一些框架性的类方法，这和在上一章所做的工作类似，定义枚举类仅仅是为了使得代码更加可读，也为了编程时方便对变量进行记忆。
 
-{% code title="myGO\\tic-tac-toe\\main.py" %}
+{% code title="MyGo\\tic-tac-toe\\main.py" %}
 ```python
 class GameResult(enum.Enum):    #1
     loss = 1
@@ -131,7 +131,7 @@ player_o=-1
 
 先来看一下抽象后的棋盘：
 
-{% code title="myGO\\tic-tac-toe\\ttt.py" %}
+{% code title="MyGo\\tic-tac-toe\\ttt.py" %}
 ```python
 class Board:
     def __init__(self):    #1
@@ -159,7 +159,7 @@ class Board:
 
 和智能算法无关的事情，我打算都交给记录棋局的状态类来完成，接着我们来看看这个类需要做些什么：
 
-{% code title="myGO\\tic-tac-toe\\ttt.py" %}
+{% code title="MyGo\\tic-tac-toe\\ttt.py" %}
 ```python
 class Game:
     def __init__(self, board, player=player_x,game_state=GameState.waiting):
@@ -194,11 +194,11 @@ class Game:
 7. 判断落子是否合法。井字棋游戏不允许在已经下过的位置再下棋，一般也可以为这种游戏规则的校验再额外设置一个裁判类，使得逻辑抽象和分工更加明确；
 8. 这个类返回当前棋局状态下所有合法的选择，这个方法也可以放在Agent类中实现，但是为了保持风格一致，我选择了尽量简化另外两个类。
 
-上面这些方法都和本章的智能主题不太相关，所以具体的实现可以访问myGO在github上的源码，源码里有更详细的注解，这里就不再赘述了。
+上面这些方法都和本章的智能主题不太相关，所以具体的实现可以访问MyGo在github上的源码，源码里有更详细的注解，这里就不再赘述了。
 
 和棋盘类一样，我不想把下棋的人这件事情抽象的过于复杂，AI程序只需要能根据棋盘的当前状态给出下一步出棋就行了。
 
-{% code title="myGO\\tic-tac-toe\\ttt.py" %}
+{% code title="MyGo\\tic-tac-toe\\ttt.py" %}
 ```python
 class Agent:
     def __init__(self,game,player,mode='r'):     
@@ -221,7 +221,7 @@ class Agent:
 
 随机方法的棋力非常弱，它从所有合法的选项中随机挑选出一个选择，专门实现随机方法这件事的目的是为了给后面的极小化极大算法提供一个参考对手，我们后面会看到贪婪算法与随机算法在棋力方面的差距。我们先来着重看一下极小化极大算法在实际中的是如何实现的。
 
-{% code title="myGO\\tic-tac-toe\\ttt.py" %}
+{% code title="MyGo\\tic-tac-toe\\ttt.py" %}
 ```python
         if self.mode=='ai':
             moves=self.game.getLegalMoves()    #1
@@ -255,7 +255,7 @@ class Agent:
 
 我们在编写极小化极大算法没有站在己方的角度来思考，而是站在了对方的角度来对棋局进行评价。正是这个技巧使得整个算法采用递归来实现变得具有可行性，否则我们只能采用像图3-4那样的循序逻辑来手工编写每一步落棋判断直到棋局结束。进入到`bestResultForOP()`内部查看源码会发现这个函数会调用`bestResultForOP()`本身，这也是递归写法的一个典型特征。如果己方要知道当前状态的最好结果就要查看对方在下一步情形下的最好结果，而对手想知道自己的最好结果就又要再看己方下下一步能够获得最好结果，如此往复循环直至游戏结束，即有一个明确的胜负或者和局的结果。
 
-{% code title="myGO\\tic-tac-toe\\ttt.py" %}
+{% code title="MyGo\\tic-tac-toe\\ttt.py" %}
 ```python
 def bestResultForOP(game):
     if game.state==GameState.over:    #1
@@ -302,7 +302,7 @@ def bestResultForOP(game):
 
 根据算法介绍可知，如果要使用Alpha-beta剪枝算法就会额外需要一套局面价值评估系统来决定哪线搜索分支是有希望的，而哪些是没有希望的分支。所谓局面价值，就是指当前盘面的胜负概率，胜率越高则价值越大，反之则价值越小，甚至是负价值。各种采用Alpha-beta剪枝算法的人工智能程序之间的实力差距其实就是由于局面价值评估系统的不同所造成的。局面价值评估系统带有很强的主观性，对于如何评估棋局的价值有点像莎士比亚说的，"一千个观众眼中有一千个哈姆雷特" 。下面将继续使用井字棋来演示Alpha-beta剪枝算法。为了省去设计井字棋的价值函数，我们粗暴地认为除了赢和输，其它所有盘面（包括和棋）的价值均为零，赢棋的盘面价值为一，输棋的盘面价值为负一。如果读者想自己在围棋游戏上尝试一下这个算法，最简单的局面评估算法之一就是计算当前双方在棋盘上剩余棋子的差额。不过实战中很少会有棋手主动提取对方已经穷途末路的棋子，所以也许这种评估方法得到的高价值局面反而会带来更加不利的影响。
 
-{% code title="myGO\\tic-tac-toe\\ttt.py" %}
+{% code title="MyGo\\tic-tac-toe\\ttt.py" %}
 ```python
 def evl_game(game):
     if getResult(game.board.board)[1] != None:    #1
@@ -323,7 +323,7 @@ def evl_game(game):
 
 同极小化极大算法相比，Alpha-beta剪枝算法并不是要等到棋局下到结束才给出对局面的评估，每个不同可选项得到的评估结果会由价值评估函数给出不同的数值结果，不尽相同的评估结果（极小化极大算法只有胜、负、和三种评估结果）导致Alpha-beta剪枝算法在使用过程中需要记录博弈双方在搜索过程中所能取得的最佳价值，我们可以把双方记录的最佳价值等价地看作是极小化极大算法中的胜利结果。传统上把一方所能搜索到的当前局面最佳价值叫做Alpha，另一方的最佳价值称作Beta，这种叫法也正是这个算法名称的由来。对于井字棋，将其简记为`best_o`和`best_x`。
 
-{% code title="myGO\\tic-tac-toe\\ttt.py" %}
+{% code title="MyGo\\tic-tac-toe\\ttt.py" %}
 ```python
 if self.mode=='ab':		#1
 		moves=self.game.getLegalMoves()		#2
@@ -366,7 +366,7 @@ if self.mode=='ab':		#1
 
 上面的代码和极小化极大算法在框架上是非常相似的，如果读者仔细思索就会发现虽然算法的描述介绍好像有点玄乎，但是实现上Alpha-beta算法和极小化极大算法并没有什么本质上的区别，仅仅是将胜负结果的判断用一个价值判断函数替代了。既然Alpha-beta算法是对极小化极大算法的优化，它也只能通过递归的方式来实现。`alpha_beta_prune`函数是了整个递归方法的核心，读者可以将极小化极大算法中的`bestResultForOP`和这个`alpha_beta_prune`比较着来看。
 
-{% code title="myGO\\tic-tac-toe\\ttt.py" %}
+{% code title="MyGo\\tic-tac-toe\\ttt.py" %}
 ```python
 
 max_depth=4    #1
@@ -493,7 +493,7 @@ $$
 
 根据算法，我们设计了下面这个小工具，建议读者自行调整其中随机数产生的次数，以观察抽取点的数量对最终结果的影响。
 
-{% code title="myGO\\tic-tac-toe\\cycle\_area.py" %}
+{% code title="MyGo\\tic-tac-toe\\cycle\_area.py" %}
 ```python
 import numpy as np
 from numpy import linalg as LA
@@ -546,7 +546,7 @@ print([area_machine(i,r).run() for i in times])
 
 我们尝试在井字棋上采用蒙特卡洛搜索树的算法，根据前面的介绍，算法归结起来做了以下几件事情：
 
-{% code title="myGO\\tic-tac-toe\\ttt.py" %}
+{% code title="MyGo\\tic-tac-toe\\ttt.py" %}
 ```python
 class Agent:
 
