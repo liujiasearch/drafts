@@ -508,6 +508,89 @@ print("acc: %f" % acc)
 
 另外我们训练出的神经网络只能处理取值范围在坐标\[0,0\]到\[1,1\]所围成的矩形区域内的数据，当输入数据超出这个范围，网络的预测能力就会变差，甚至差到完全无法使用的地步。在当前的这个例子中因为训练集和测试集都采样自相同分布，所以预测精度较高。想要通过机器学习来获取理想的分类效果，训练用的数据和预测的数据就必须来自于相同的数据分布，用一个通俗的类比来说，当一个只见过猫的人见到一只小花豹时，这个人也只会把豹子当作某个品种的猫来分类罢了。人们无法将某个领域的专业知识迁移到另一个不同的领域，这一点对于机器学习来说也是一样的。
 
+### 卷积网络对图片进行多分类的应用示例
+
+MNIST数据集大概是全世界被用来作为图像分类识别示例时用到的最多的手写数字图片集合了，很多与图像识别相关的教材都会对它“下手”，它几乎已经成为了一个业界的典范。MNIST数据集由来自 250 个不同人手写的数字构成，这些数字（0到9）已经过尺寸标准化并位于图像中心，每张图片由$$28\times28=784$$个像素点构成，像素的取值为0到1。为简单起见，每个图像都被平展并转换为784个特征的一维`numpy`数组。MNIST数据集被分成两部分，包含60,000个用于训练的示例和10,000个用于测试的示例，总数据量大约为18M。本节我们将训练一个机器学习模型来预测MNIST图片里面的数字。
+
+我们先装载将会使用到的工具库
+
+```python
+import numpy as np
+from tensorflow import keras
+from tensorflow.keras import layers
+```
+
+后续的代码均来自Keras的[样例](https://keras.io/examples/vision/mnist_convnet/)，读者可以直接在官网上下载源码。下面的代码将MNIST数据集装载到变量中以备后续调用。
+
+```python
+num_classes = 10    #1
+input_shape = (28, 28, 1)    #2   
+
+(x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()    #3
+
+x_train = x_train.astype("float32") / 255    #4
+x_test = x_test.astype("float32") / 255    #4
+
+x_train = np.expand_dims(x_train, -1)    #5
+x_test = np.expand_dims(x_test, -1)    #5
+
+y_train = keras.utils.to_categorical(y_train, num_classes)    #6
+y_test = keras.utils.to_categorical(y_test, num_classes)    #6
+```
+
+1. MNIST数据集一共包含0到9十个数字分类；
+2. 单个图片的格式，28＊28个像素，且仅有一个颜色通道；
+3. 装载训练集和测试集的样本与标签；
+4. 对图片输入值进行预处理，将0-255的像素值转化为0.0-1.0范围内的实数，这个处理可以让网络训练结果更快地收敛；
+5. 由于MNIST数据本身没有包含通道信息，而Keras的卷积网络模块需要知道二位数据的通道数，因此为输入信息额外扩展一个通道信息维度；
+6. 对标签信息进行One-Hot编码。MNIST数据的标签是0到9。但是在分类问题中，神经网络的输出层通常是有多少个分类对应多少输出神经元。One-Hot编码的作用就是把0-9这些数字映射到对应的神经元上取。比如数字0映射到输出层是`1000000000`，数字5映射到输出层是`0000010000`，数字9为`0000000001`。
+
+初始化数据集后，接下去定义我们的神经网络结构。这里采用了卷积网络加全连接网络的架构，这也是一个通用的模式，卷积网络用于特征提取而全连接网络用于逻辑判断。
+
+```python
+model = keras.Sequential(
+    [
+        keras.Input(shape=input_shape),    #1
+        layers.Conv2D(32, kernel_size=(3, 3), activation="relu"),    #2
+        layers.MaxPooling2D(pool_size=(2, 2)),
+        layers.Conv2D(64, kernel_size=(3, 3), activation="relu"),
+        layers.MaxPooling2D(pool_size=(2, 2)),
+        layers.Flatten(),    #3
+        layers.Dropout(0.5),    #4
+        layers.Dense(num_classes, activation="softmax"),    #5
+    ]
+)
+```
+
+1. 卷积网络的输入数据为图片的格式，这里是宽28、高28、通道数为1的图片；
+2. Conv2D表示二维卷积层，该层有32个卷积核，卷积尺寸是3\*3，采用Relu作为激活函数；
+3. 卷积网络提取完特征后通过flatten层将高维结构平展为一维结构。全连接网络只能接收一维数据；
+4. 这里采用了随机丢弃算法来避免网络的过拟合。关于什么是防止过拟合会在后半部分进行介绍；
+5. 这里仅使用一层全连接网络，由于输出分类共10类，于是用10个神经元作为输出层，分类问题通常采用softmax函数作为激活函数。
+
+后续就是常规流程，设置损失函数和反向传播使用的优化算法，最后输入样本和标签进行小批量训练。
+
+```python
+batch_size = 128    #1
+epochs = 15    #1
+
+model.compile(loss="categorical_crossentropy", 
+    optimizer="adam", metrics=["accuracy"])    #2
+
+model.fit(x_train, y_train, batch_size=batch_size, 
+    epochs=epochs, validation_split=0.1)    #3
+```
+
+1. 设置128个样本为一个小批量，总数据循环训练15次；
+2. 使用多分类损失函数，并使用adam这个梯度下降的优化算法；
+3. 这里采用了将训练集切割出10%用作每次训练后的内部验证，这个做法能够在每一次训练后都比较客观地评估训练效果。
+
+```python
+score = model.evaluate(x_test, y_test, verbose=0)    #1
+```
+
+1. 用测试集对模型的训练结果进行评估。该模型的精度基本可以保持在99%左右。
+
 ## 优化我们的神经网络
 
 假设你正在创建一家旨在为多家围棋教育机构提供训练程序的初创公司，你的团队打算应用神经网络技术来构建一个超越人类水平的围棋智能程序，并期望通过该智能程序来提供可以与人类棋手进行围棋对弈的在线软件。但是目前情况很不乐观，你的团队设计的学习算法并不够好，智能程序的水平也仅仅是比随机下法强那么一丁点，连一些刚入门的初级选手也无法击败。为了改进这个程序，你正面临着巨大的压力。可你该怎么做呢？
