@@ -589,7 +589,7 @@ model.fit(x_train, y_train, batch_size=batch_size,
 score = model.evaluate(x_test, y_test, verbose=0)    #1
 ```
 
-1. 用测试集对模型的训练结果进行评估。该模型的精度基本可以保持在99%左右。
+1. 用测试集对模型的训练结果进行评估。该模型的精度基本可以保持在99%左右，这个准确率已经和人类处理该数据的水平相当了。
 
 ## 优化我们的神经网络
 
