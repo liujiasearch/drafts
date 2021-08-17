@@ -92,7 +92,7 @@ def dl(state,newState,action,reward):
 
 在Q-Learning的学习过程中，由于外界的反馈是不确定的，在智能程序真正地实施行为后才能得到外部的反馈，于是智能程序只能根据自己的小本本来选择合适的动作行为。但是为了避免陷入局部最优，在学习时，我们需要为智能程序引入一定比例的随机行为。即便智能程序的小本本上说往右走能得到好的结果，但是一旦满足随机条件，我们就让智能程序不遵照小本本的指导，随性地做出一个不负责任的选择。通常这个比例是1%，不过也可以动态地设置这个比例，可以一开始设置得比较高，随着学习获取到的知识逐渐增多，这个比例就慢慢地下降到零。
 
-{% code title="myGO/q-learning.py" %}
+{% code title="MyGo/q-learning.py" %}
 ```python
 def chooseAction(state):
     policy=vTable.loc[state]
@@ -193,7 +193,7 @@ def dl(self,action,location,newLocation,how,env,isOver,reward):
 
 如果当前小人在第五格，智能程序查了一下表，往右走的预估价值比较高，于是它选择了往右走的行动，但是为了按照Sarsa算法更新，它还要看一下在第六格时，它会采取什么行动，安理它同样应该选择继续往右走，但是由于随机到一个比较小的数字，它不得已随机选择了往左走。此时在更新第五格的行为表的时候，对未来第六格能获取价值的折现取的就是0.7，而不能是0.8了，而Q-Learning算法中，我们取的是MAX\(第六格\)，所以一定会取0.8。
 
-{% code title="myGO/q-learning\_sarsa.py" %}
+{% code title="MyGo/q-learning\_sarsa.py" %}
 ```python
 action=self.locationNextMove    #1
 beforeAction=self.location[:]    #2
@@ -233,7 +233,7 @@ Q-Learning和Sarsa都是单步更新，而且两者在使用的效果上几乎�
 
 具体选择哪种方式需要根据实际的问题来判断。如果我们认为状态无论重复过多少次，带来的结果都是相同的，那么我们可以选择第一种方式，如果我们认为一个状态重复的次数越多，表明这个状态对最后得到的结果越重要的话，就可以选择第二种方式。
 
-{% code title="myGO/q-learning\_sarsa.py" %}
+{% code title="MyGo/q-learning\_sarsa.py" %}
 ```python
 def updateSarsaLamda(self,location,action):
     if self.sarsaLamda.get(tuple(location))==None:
@@ -346,7 +346,7 @@ def dl(self,action,location,newLocation,how,env,isOver,reward):
 
 下面将从代码层面来看一下采用Q-Learning算法学习的围棋程序的具体实现方式。
 
-{% code title="myGO/pytorch/dqn.py" %}
+{% code title="MyGo/pytorch/dqn.py" %}
 ```python
 class Net(nn.Module):
     def __init__(self):    #1
@@ -394,7 +394,7 @@ class Net(nn.Module):
 
 我们的价值网络采用前面介绍的结构二的形式，面对任一局面，要获得落子建议时需要把所有可行的落子点逐一输入价值网络，然后取其中能使得网络输出最大值的着法作为对未来获取最大价值的最佳估计。初始的时候，网络会随机输出不同着法的价值，虽然我们好像是评估了各个落子点的期望价值，其实就是随机落子。但是随着智能程序对弈的棋局越来越多，学习到的棋局知识也越来越多，网络给出的价值估计值就会逐渐往最佳估计收敛。
 
-{% code title="myGO/pytorch/dqn.py" %}
+{% code title="MyGo/pytorch/dqn.py" %}
 ```python
 moves=self.getLegalMoves(board,player)    #1
 if len(moves)==0:    #1
@@ -434,7 +434,7 @@ $$
 
 简化后的公式看上去好像是Sarsa，而不是Sarsa-Lambda，这很正常，因为Sarsa-Lambda本来就是对Sarsa的扩展与优化。需要知道，简化后的公式是获取棋局结果后对所有的历史落子记录进行的一次批量更新。Sarsa只能走一步更新一步，不能进行批量更新，因为它不对行棋的过程做历史记录。对比神经网络的梯度下降方法，公式1就是计算样本与估计之间的误差，公式2则是根据学习率更新网络中的参数。
 
-{% code title="myGO/pytorch/dqn.py" %}
+{% code title="MyGo/pytorch/dqn.py" %}
 ```python
 criterion = nn.MSELoss()    #1
 for i in range(5000):    #2
